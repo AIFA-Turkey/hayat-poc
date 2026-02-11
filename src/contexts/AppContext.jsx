@@ -1,0 +1,92 @@
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import keycloak from '../services/keycloak';
+
+const AppContext = createContext();
+
+export const AppProvider = ({ children }) => {
+  const [token, setToken] = useState(null);
+  const [apiKey, setApiKey] = useState(sessionStorage.getItem('FLOW_AI_API_KEY'));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const login = (key) => {
+    sessionStorage.setItem('FLOW_AI_API_KEY', key);
+    setApiKey(key);
+  };
+
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const initOptions = {
+      onLoad: 'login-required',
+      pkceMethod: 'S256',
+      checkLoginIframe: false,
+      redirectUri: window.location.origin + '/flowai',
+      silentCheckSsoRedirectUri: `${window.location.origin}/flowai/silent-check-sso.html`,
+    };
+
+    keycloak.init(initOptions).then(authenticated => {
+      console.log('Keycloak Auth Result:', authenticated);
+      if (authenticated) {
+        console.log('Token acquired:', !!keycloak.token);
+        setToken(keycloak.token);
+        setIsAuthenticated(true);
+
+        // Setup token refresh
+        const interval = setInterval(() => {
+          keycloak.updateToken(70).then(refreshed => {
+            if (refreshed) {
+              setToken(keycloak.token);
+            }
+          }).catch(err => {
+            console.error('Failed to refresh token', err);
+            keycloak.login();
+          });
+        }, 60000);
+
+        setLoading(false);
+        return () => {
+          clearInterval(interval);
+        };
+      } else {
+        keycloak.login();
+      }
+    }).catch(err => {
+      console.error('Keycloak Init Error:', err);
+    });
+  }, []);
+
+  const logout = () => {
+    sessionStorage.removeItem('FLOW_AI_API_KEY');
+    keycloak.logout();
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-600 font-medium">Authenticating with Keycloak...</p>
+          <p className="text-xs text-slate-400">If this takes too long, check the browser console for errors.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AppContext.Provider value={{ token, apiKey, isAuthenticated, login, logout }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext must be used within an AppProvider');
+  }
+  return context;
+};
