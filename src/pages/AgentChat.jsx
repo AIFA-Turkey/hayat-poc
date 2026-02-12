@@ -71,7 +71,7 @@ export const AgentChat = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">Ajan Sohbeti</h1>
-                        <p className="text-slate-500">Özelleştirilebilir bir Yapay Zeka Ajanı ile etkileşime geçin</p>
+                        <p className="text-slate-500">Yapay Zeka Ajanınız sorunuza en uygun kaynaktan cevap versin</p>
                     </div>
                 </div>
 

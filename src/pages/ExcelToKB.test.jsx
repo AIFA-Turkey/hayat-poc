@@ -11,7 +11,7 @@ describe('ExcelToKB', () => {
             </AppProvider>
         );
 
-        expect(screen.getByText(/Excel'den KB'ye/i)).toBeInTheDocument();
+        expect(screen.getByText(/Excel'den Bilgi Bankasına/i)).toBeInTheDocument();
         expect(screen.getByText(/Azure Blob İndirme/i)).toBeInTheDocument();
         expect(screen.getByText(/Veri Hazırlama/i)).toBeInTheDocument();
         expect(screen.getByText(/Azure Doc Intelligence/i)).toBeInTheDocument();

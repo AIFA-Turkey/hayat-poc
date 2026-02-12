@@ -4,11 +4,13 @@ import { Layout } from './components/Layout';
 import { ApiKeyModal } from './components/ApiKeyModal';
 
 // Pages
+import { Home } from './pages/Home';
 import { ExcelToKB } from './pages/ExcelToKB';
 import { ExcelToDB } from './pages/ExcelToDB';
 import { KBChat } from './pages/KBChat';
 import { T2DChat } from './pages/T2DChat';
 import { AgentChat } from './pages/AgentChat';
+import { SettingsPage } from './pages/Settings';
 
 function AppContent() {
   return (
@@ -16,11 +18,13 @@ function AppContent() {
       <ApiKeyModal />
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<ExcelToKB />} />
+          <Route index element={<Home />} />
+          <Route path="excel-kb" element={<ExcelToKB />} />
           <Route path="excel-db" element={<ExcelToDB />} />
           <Route path="patent-chat" element={<KBChat />} />
           <Route path="excel-chat" element={<T2DChat />} />
           <Route path="agent-chat" element={<AgentChat />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

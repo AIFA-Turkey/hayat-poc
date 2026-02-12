@@ -64,7 +64,7 @@ export const ChatInput = ({ value, onChange, onSend, disabled }) => {
             <button
                 onClick={onSend}
                 disabled={!value.trim() || disabled}
-                className="absolute right-2 bottom-2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
                 <Send size={16} />
             </button>

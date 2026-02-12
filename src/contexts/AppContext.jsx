@@ -8,6 +8,18 @@ export const AppProvider = ({ children }) => {
   const [apiKey, setApiKey] = useState(sessionStorage.getItem('FLOW_AI_API_KEY'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [kbChatConfig, setKbChatConfig] = useState({
+    knowledgebase_id: '',
+    lmapiid: '',
+    workspaceid: ''
+  });
+  const [t2dChatConfig, setT2dChatConfig] = useState({
+    db_vendor_account_id: '',
+    lmapiid: ''
+  });
+  const [agentChatConfig, setAgentChatConfig] = useState({
+    system_prompt: ''
+  });
 
   const login = (key) => {
     sessionStorage.setItem('FLOW_AI_API_KEY', key);
@@ -59,6 +71,11 @@ export const AppProvider = ({ children }) => {
     });
   }, []);
 
+  const resetApiKey = () => {
+    sessionStorage.removeItem('FLOW_AI_API_KEY');
+    setApiKey(null);
+  };
+
   const logout = () => {
     sessionStorage.removeItem('FLOW_AI_API_KEY');
     keycloak.logout();
@@ -77,7 +94,22 @@ export const AppProvider = ({ children }) => {
   }
 
   return (
-    <AppContext.Provider value={{ token, apiKey, isAuthenticated, login, logout }}>
+    <AppContext.Provider
+      value={{
+        token,
+        apiKey,
+        isAuthenticated,
+        login,
+        logout,
+        resetApiKey,
+        kbChatConfig,
+        setKbChatConfig,
+        t2dChatConfig,
+        setT2dChatConfig,
+        agentChatConfig,
+        setAgentChatConfig
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

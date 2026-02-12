@@ -93,7 +93,7 @@ export const ExcelToKB = () => {
                     <Upload size={28} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Excel'den KB'ye</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Excel'den Bilgi Bankasına</h1>
                     <p className="text-slate-500">Excel dosyalarını işleyip Patent GPT Bilgi Bankası oluşturun</p>
                 </div>
             </div>

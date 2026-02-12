@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MessageSquare, Database, Sparkles, Code, Terminal, Info } from 'lucide-react';
-import { Card } from '../components/Card';
-import { Input } from '../components/Input';
+import { MessageSquare, Database, Sparkles, Terminal, Info } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
@@ -70,27 +68,18 @@ const T2DMessage = ({ text, isBot }) => {
 };
 
 export const T2DChat = () => {
-    const { token, apiKey } = useAppContext();
+    const { token, apiKey, t2dChatConfig } = useAppContext();
     const [messages, setMessages] = useState([{ text: 'Merhaba! Patent Veritabanınızı sorgulamanıza yardımcı olabilirim. Ne öğrenmek istersiniz?', isBot: true }]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const [config, setConfig] = useState({
-        db_vendor_account_id: '',
-        lmapiid: ''
-    });
-
-    const handleConfigChange = (e) => {
-        setConfig({ ...config, [e.target.name]: e.target.value });
-    };
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
         // Basic validation for required IDs
-        if (!config.db_vendor_account_id || !config.lmapiid) {
+        if (!t2dChatConfig.db_vendor_account_id || !t2dChatConfig.lmapiid) {
             setMessages(prev => [...prev, {
-                text: 'Hata: Lütfen önce Ayarlar yan panelinde Vendor Account ID ve LMap IID değerlerini yapılandırın.',
+                text: 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Vendor Account ID ve LM API ID değerlerini yapılandırın.',
                 isBot: true
             }]);
             return;
@@ -108,8 +97,8 @@ export const T2DChat = () => {
             sessionid: "user_1",
             tweaks: {
                 "CerebroT2DChatComponent-10UsX": {
-                    "db_vendor_account_id": config.db_vendor_account_id,
-                    "lmapiid": config.lmapiid
+                    "db_vendor_account_id": t2dChatConfig.db_vendor_account_id,
+                    "lmapiid": t2dChatConfig.lmapiid
                 }
             }
         };
@@ -137,7 +126,7 @@ export const T2DChat = () => {
     };
 
     return (
-        <div className="flex h-full gap-6">
+        <div className="flex h-full">
             <div className="flex-1 flex flex-col min-w-0">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="p-3 bg-cyan-50 rounded-xl text-cyan-600 border border-cyan-100">
@@ -175,22 +164,6 @@ export const T2DChat = () => {
                         />
                     </div>
                 </div>
-            </div>
-
-            <div className="w-80 shrink-0">
-                <Card title="Ayarlar" className="h-full">
-                    <div className="space-y-4">
-                        <Input label="Vendor Account ID" name="db_vendor_account_id" value={config.db_vendor_account_id} onChange={handleConfigChange} />
-                        <Input label="LMap IID" name="lmapiid" value={config.lmapiid} onChange={handleConfigChange} />
-                    </div>
-
-                    <div className="mt-6 p-4 rounded-lg bg-cyan-50 border border-cyan-100">
-                        <h4 className="text-cyan-700 text-xs font-bold uppercase mb-2">Veritabanı Bağlamı</h4>
-                        <p className="text-cyan-600/80 text-xs leading-relaxed">
-                            Geçerli sorgular çalıştırmak için Vendor Account ID'nin veritabanı kaydınızla eşleştiğinden emin olun.
-                        </p>
-                    </div>
-                </Card>
             </div>
         </div>
     );

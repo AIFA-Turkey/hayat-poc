@@ -1,34 +1,22 @@
 import { useState } from 'react';
-import { MessageSquare, Settings, Sparkles } from 'lucide-react';
-import { Card } from '../components/Card';
-import { Input } from '../components/Input';
+import { MessageSquare, Sparkles } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
 
 export const KBChat = () => {
-    const { token, apiKey } = useAppContext();
+    const { token, apiKey, kbChatConfig } = useAppContext();
     const [messages, setMessages] = useState([{ text: 'Merhaba! Bugün Patent araştırmalarınızda nasıl yardımcı olabilirim?', isBot: true }]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const [config, setConfig] = useState({
-        knowledgebase_id: '',
-        lmapiid: '',
-        workspaceid: ''
-    });
-
-    const handleConfigChange = (e) => {
-        setConfig({ ...config, [e.target.name]: e.target.value });
-    };
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
         // Basic validation for required IDs
-        if (!config.knowledgebase_id || !config.lmapiid || !config.workspaceid) {
+        if (!kbChatConfig.knowledgebase_id || !kbChatConfig.lmapiid || !kbChatConfig.workspaceid) {
             setMessages(prev => [...prev, {
-                text: 'Hata: Lütfen önce Ayarlar yan panelinde Knowledge Base ID, LMap IID ve Workspace ID değerlerini yapılandırın.',
+                text: 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Knowledge Base ID, LM API ID ve Workspace ID değerlerini yapılandırın.',
                 isBot: true
             }]);
             return;
@@ -46,9 +34,9 @@ export const KBChat = () => {
             sessionid: "user_1",
             tweaks: {
                 "CerebroKBChatComponent-uMCSg": {
-                    "knowledgebase_id": config.knowledgebase_id,
-                    "lmapiid": config.lmapiid,
-                    "workspaceid": config.workspaceid
+                    "knowledgebase_id": kbChatConfig.knowledgebase_id,
+                    "lmapiid": kbChatConfig.lmapiid,
+                    "workspaceid": kbChatConfig.workspaceid
                 }
             }
         };
@@ -76,7 +64,7 @@ export const KBChat = () => {
     };
 
     return (
-        <div className="flex h-full gap-6">
+        <div className="flex h-full">
             <div className="flex-1 flex flex-col min-w-0">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 border border-indigo-100">
@@ -114,23 +102,6 @@ export const KBChat = () => {
                         />
                     </div>
                 </div>
-            </div>
-
-            <div className="w-80 shrink-0">
-                <Card title="Ayarlar" className="h-full">
-                    <div className="space-y-4">
-                        <Input label="Knowledge Base ID" name="knowledgebase_id" value={config.knowledgebase_id} onChange={handleConfigChange} />
-                        <Input label="LMap IID" name="lmapiid" value={config.lmapiid} onChange={handleConfigChange} />
-                        <Input label="Workspace ID" name="workspaceid" value={config.workspaceid} onChange={handleConfigChange} />
-                    </div>
-
-                    <div className="mt-6 p-4 rounded-lg bg-indigo-50 border border-indigo-100">
-                        <h4 className="text-indigo-700 text-xs font-bold uppercase mb-2">Bağlam Bilgisi</h4>
-                        <p className="text-indigo-600/80 text-xs leading-relaxed">
-                            Belirli bilgi bankası bağlamına bağlanmak için ID'leri yapılandırın. Bu, sohbetin doğru veri kaynağını kullanmasını sağlar.
-                        </p>
-                    </div>
-                </Card>
             </div>
         </div>
     );
