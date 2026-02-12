@@ -12,11 +12,9 @@ describe('ExcelToKB', () => {
         );
 
         expect(screen.getByText(/Excel'den Bilgi Bankasına/i)).toBeInTheDocument();
-        expect(screen.getByText(/Azure Blob İndirme/i)).toBeInTheDocument();
+        expect(screen.getByText(/Excel Dosyası Yükleme/i)).toBeInTheDocument();
         expect(screen.getByText(/Veri Hazırlama/i)).toBeInTheDocument();
-        expect(screen.getByText(/Azure Doc Intelligence/i)).toBeInTheDocument();
         expect(screen.getByText(/KB Oluşturucu/i)).toBeInTheDocument();
-        expect(screen.getByText(/Azure Blob Yükleme/i)).toBeInTheDocument();
     });
 
     it('updates form values', () => {

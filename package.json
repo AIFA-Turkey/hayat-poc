@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.18.0",
+    "buffer": "^6.0.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.0",
     "keycloak-js": "^26.2.3",

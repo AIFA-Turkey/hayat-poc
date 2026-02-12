@@ -1,4 +1,4 @@
-import { Settings, MessageSquare, Database, Bot } from 'lucide-react';
+import { Settings, MessageSquare, Database, Bot, Cloud, FileSearch } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Input, TextArea } from '../components/Input';
 import { useAppContext } from '../contexts/AppContext';
@@ -10,7 +10,11 @@ export const SettingsPage = () => {
         t2dChatConfig,
         setT2dChatConfig,
         agentChatConfig,
-        setAgentChatConfig
+        setAgentChatConfig,
+        blobStorageConfig,
+        setBlobStorageConfig,
+        docIntelConfig,
+        setDocIntelConfig
     } = useAppContext();
 
     const handleChange = (setter) => (event) => {
@@ -116,6 +120,68 @@ export const SettingsPage = () => {
                         <h4 className="text-pink-700 text-xs font-bold uppercase mb-2">İstem Mühendisliği</h4>
                         <p className="text-pink-600/80 text-xs leading-relaxed">
                             Ajanın kişiliğini ve davranış kısıtlarını burada tanımlayın. Bu istem, her mesajın bağlamına eklenir.
+                        </p>
+                    </div>
+                </Card>
+
+                <Card
+                    title="Blob Storage Ayarları"
+                    action={<Cloud size={18} className="text-emerald-500" />}
+                    className="h-full"
+                >
+                    <div className="space-y-4">
+                        <Input
+                            label="Bağlantı Dizesi"
+                            name="connection_string"
+                            value={blobStorageConfig.connection_string}
+                            onChange={handleChange(setBlobStorageConfig)}
+                            type="password"
+                        />
+                        <Input
+                            label="Container İsmi"
+                            name="container_name"
+                            value={blobStorageConfig.container_name}
+                            onChange={handleChange(setBlobStorageConfig)}
+                            placeholder="ornek-container"
+                            className="mb-0"
+                        />
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-lg bg-emerald-50 border border-emerald-100">
+                        <h4 className="text-emerald-700 text-xs font-bold uppercase mb-2">Blob Depolama</h4>
+                        <p className="text-emerald-600/80 text-xs leading-relaxed">
+                            Excel yükleme ve indirme adımlarında kullanılacak bağlantı dizesi ve container bilgisini burada saklayın.
+                        </p>
+                    </div>
+                </Card>
+
+                <Card
+                    title="Azure Document Intelligence Ayarları"
+                    action={<FileSearch size={18} className="text-indigo-500" />}
+                    className="h-full"
+                >
+                    <div className="space-y-4">
+                        <Input
+                            label="Endpoint"
+                            name="endpoint"
+                            value={docIntelConfig.endpoint}
+                            onChange={handleChange(setDocIntelConfig)}
+                            placeholder="https://..."
+                            className="mb-0"
+                        />
+                        <Input
+                            label="API Anahtarı"
+                            name="api_key"
+                            value={docIntelConfig.api_key}
+                            onChange={handleChange(setDocIntelConfig)}
+                            type="password"
+                        />
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-lg bg-indigo-50 border border-indigo-100">
+                        <h4 className="text-indigo-700 text-xs font-bold uppercase mb-2">Doküman Analizi</h4>
+                        <p className="text-indigo-600/80 text-xs leading-relaxed">
+                            Excel’den Bilgi Bankasına akışı için gerekli Azure Document Intelligence kimlik bilgilerini burada yönetin.
                         </p>
                     </div>
                 </Card>

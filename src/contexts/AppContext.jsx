@@ -20,6 +20,14 @@ export const AppProvider = ({ children }) => {
   const [agentChatConfig, setAgentChatConfig] = useState({
     system_prompt: ''
   });
+  const [blobStorageConfig, setBlobStorageConfig] = useState({
+    connection_string: '',
+    container_name: ''
+  });
+  const [docIntelConfig, setDocIntelConfig] = useState({
+    api_key: '',
+    endpoint: ''
+  });
 
   const login = (key) => {
     sessionStorage.setItem('FLOW_AI_API_KEY', key);
@@ -107,7 +115,11 @@ export const AppProvider = ({ children }) => {
         t2dChatConfig,
         setT2dChatConfig,
         agentChatConfig,
-        setAgentChatConfig
+        setAgentChatConfig,
+        blobStorageConfig,
+        setBlobStorageConfig,
+        docIntelConfig,
+        setDocIntelConfig
       }}
     >
       {children}

@@ -1,42 +1,126 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Play, Loader2, FileJson } from 'lucide-react';
+import { BlobServiceClient } from '@azure/storage-blob';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
 
+const ALLOWED_EXCEL_TYPES = new Set([
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+]);
+
+const hasExcelExtension = (filename = '') => {
+    const lower = filename.toLowerCase();
+    return lower.endsWith('.xls') || lower.endsWith('.xlsx');
+};
+
+const isExcelFile = (file) => {
+    if (!file) return false;
+    return ALLOWED_EXCEL_TYPES.has(file.type) || hasExcelExtension(file.name);
+};
+
 export const ExcelToKB = () => {
-    const { token, apiKey } = useAppContext();
+    const { token, apiKey, blobStorageConfig, docIntelConfig } = useAppContext();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState('');
+    const [uploadedBlobUrl, setUploadedBlobUrl] = useState('');
 
     const [formData, setFormData] = useState({
         title_column: 'Başlık',
         url_column: 'URL',
-        doc_intel_api_key: '',
-        doc_intel_endpoint: '',
         blob_name: '',
-        blob_connection_string: '',
         kb_name: '',
         kb_workspace_id: '',
-        fetcher_workspace_id: '',
-        download_blob_url: '',
-        download_connection_string: ''
+        fetcher_workspace_id: ''
     });
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleFileChange = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+            setSelectedFile(null);
+            return;
+        }
+        if (!isExcelFile(file)) {
+            setUploadError('Sadece Excel dosyaları yüklenebilir (.xls, .xlsx).');
+            setSelectedFile(null);
+            event.target.value = '';
+            return;
+        }
+        setUploadError('');
+        setUploadedBlobUrl('');
+        setSelectedFile(file);
+        setFormData((prev) => ({
+            ...prev,
+            blob_name: prev.blob_name || file.name
+        }));
+    };
+
+    const handleUpload = async () => {
+        const connectionString = blobStorageConfig.connection_string?.trim();
+        const containerName = blobStorageConfig.container_name?.trim();
+
+        if (!selectedFile) {
+            setUploadError('Lütfen önce bir Excel dosyası seçin.');
+            return;
+        }
+        if (!connectionString || !containerName) {
+            setUploadError('Blob Storage bağlantı dizesi ve container adını Yapılandırma Ayarları sayfasında tanımlayın.');
+            return;
+        }
+
+        const rawBlobName = formData.blob_name?.trim();
+        const resolvedBlobName = rawBlobName || selectedFile.name;
+        if (!rawBlobName) {
+            setFormData((prev) => ({ ...prev, blob_name: resolvedBlobName }));
+        }
+        const finalBlobName = resolvedBlobName;
+
+        setUploading(true);
+        setUploadError('');
+        setUploadedBlobUrl('');
+
+        try {
+            const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+            const containerClient = blobServiceClient.getContainerClient(containerName);
+            const blockBlobClient = containerClient.getBlockBlobClient(finalBlobName);
+            await blockBlobClient.uploadData(selectedFile, {
+                blobHTTPHeaders: {
+                    blobContentType: selectedFile.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                }
+            });
+            setUploadedBlobUrl(blockBlobClient.url);
+        } catch (err) {
+            const message = err?.message || 'Dosya yüklenemedi. Lütfen bağlantı bilgilerini kontrol edin.';
+            setUploadError(message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const connectionString = blobStorageConfig.connection_string?.trim();
+        const docIntelApiKey = docIntelConfig.api_key?.trim();
+        const docIntelEndpoint = docIntelConfig.endpoint?.trim();
+        const resolvedBlobUrl = uploadedBlobUrl;
+        const hasFileUrl = Boolean(resolvedBlobUrl);
+
         // Basic validation
-        if (!formData.download_blob_url || !formData.doc_intel_api_key || !formData.kb_workspace_id) {
-            setError("Lütfen çalıştırmadan önce gerekli alanları doldurun (Blob URL, Doc Intel API Key ve Workspace ID).");
+        if (!connectionString || !hasFileUrl || !docIntelApiKey || !formData.kb_workspace_id) {
+            setError("Lütfen çalıştırmadan önce Blob Storage bağlantı dizesini girin ve Excel dosyasını yükleyin (Doc Intel API Key ve Workspace ID de gereklidir).");
             return;
         }
 
@@ -55,12 +139,12 @@ export const ExcelToKB = () => {
                     "url_column": formData.url_column
                 },
                 "AzureDocIntel-pdrEa": {
-                    "api_key": formData.doc_intel_api_key,
-                    "endpoint": formData.doc_intel_endpoint
+                    "api_key": docIntelApiKey,
+                    "endpoint": docIntelEndpoint
                 },
                 "AzureBlobUploadComponent-QHW8r": {
                     "blob_name": formData.blob_name,
-                    "connection_string": formData.blob_connection_string
+                    "connection_string": connectionString
                 },
                 "CerebroKBBuilderComponent-fV4VM": {
                     "knowledgebase_name": formData.kb_name,
@@ -70,8 +154,8 @@ export const ExcelToKB = () => {
                     "workspace_id": formData.fetcher_workspace_id
                 },
                 "AzureBlobDownloadComponent-x5HdI": {
-                    "blob_url": formData.download_blob_url,
-                    "connection_string": formData.download_connection_string
+                    "blob_url": resolvedBlobUrl,
+                    "connection_string": connectionString
                 }
             }
         };
@@ -98,15 +182,49 @@ export const ExcelToKB = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+                <Card title="Dosya Yükleme" className="h-fit">
+                    <div className="space-y-4">
+                        <Input
+                            label="Excel Dosyası"
+                            type="file"
+                            accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            onChange={handleFileChange}
+                        />
+                        <Input
+                            label="Blob Adı"
+                            name="blob_name"
+                            value={formData.blob_name}
+                            onChange={handleChange}
+                            placeholder="ornek.xlsx"
+                        />
+                        <Button
+                            type="button"
+                            className="w-full py-2.5 text-sm shadow-sm bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
+                            onClick={handleUpload}
+                            disabled={uploading || !selectedFile}
+                        >
+                            {uploading ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2" size={16} />}
+                            {uploading ? 'Yükleniyor...' : 'Dosya Yükle'}
+                        </Button>
+                        <p className="text-xs text-slate-500">
+                            Bağlantı dizesi ve container adı Yapılandırma Ayarları sayfasından alınır.
+                        </p>
+                        {uploadError && (
+                            <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                                {uploadError}
+                            </div>
+                        )}
+                        {uploadedBlobUrl && (
+                            <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 break-all">
+                                Yükleme tamamlandı: {uploadedBlobUrl}
+                            </div>
+                        )}
+                    </div>
+                </Card>
+
                 <Card title="Yapılandırma" className="h-fit">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">Azure Blob İndirme</h4>
-                            <Input label="Blob URL" name="download_blob_url" value={formData.download_blob_url} onChange={handleChange} placeholder="https://..." />
-                            <Input label="Bağlantı Dizesi" name="download_connection_string" value={formData.download_connection_string} onChange={handleChange} type="password" />
-                        </div>
-
                         <div>
                             <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">Veri Hazırlama</h4>
                             <div className="grid grid-cols-2 gap-4">
@@ -116,24 +234,12 @@ export const ExcelToKB = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">Azure Doküman Zekası</h4>
-                            <Input label="API Anahtarı" name="doc_intel_api_key" value={formData.doc_intel_api_key} onChange={handleChange} type="password" />
-                            <Input label="Uç Nokta" name="doc_intel_endpoint" value={formData.doc_intel_endpoint} onChange={handleChange} />
-                        </div>
-
-                        <div>
                             <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">KB Oluşturucu</h4>
                             <Input label="KB Adı" name="kb_name" value={formData.kb_name} onChange={handleChange} />
                             <div className="grid grid-cols-2 gap-4">
                                 <Input label="Workspace ID" name="kb_workspace_id" value={formData.kb_workspace_id} onChange={handleChange} />
                                 <Input label="Fetcher Workspace ID" name="fetcher_workspace_id" value={formData.fetcher_workspace_id} onChange={handleChange} />
                             </div>
-                        </div>
-
-                        <div>
-                            <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">Azure Blob Yükleme</h4>
-                            <Input label="Blob Adı" name="blob_name" value={formData.blob_name} onChange={handleChange} />
-                            <Input label="Bağlantı Dizesi" name="blob_connection_string" value={formData.blob_connection_string} onChange={handleChange} type="password" />
                         </div>
 
                         <div className="pt-4">
