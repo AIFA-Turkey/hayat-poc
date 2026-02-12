@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Play, Loader2, FileJson } from 'lucide-react';
-import { BlobServiceClient } from '@azure/storage-blob';
+import { uploadToBlob } from '../services/blobUpload';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -24,7 +24,7 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToKB = () => {
-    const { token, apiKey, blobStorageConfig, docIntelConfig } = useAppContext();
+    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig } = useAppContext();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
@@ -37,9 +37,7 @@ export const ExcelToKB = () => {
         title_column: 'Başlık',
         url_column: 'URL',
         blob_name: '',
-        kb_name: '',
-        kb_workspace_id: '',
-        fetcher_workspace_id: ''
+        kb_name: ''
     });
 
     const handleChange = (e) => {
@@ -92,15 +90,8 @@ export const ExcelToKB = () => {
         setUploadedBlobUrl('');
 
         try {
-            const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-            const containerClient = blobServiceClient.getContainerClient(containerName);
-            const blockBlobClient = containerClient.getBlockBlobClient(finalBlobName);
-            await blockBlobClient.uploadData(selectedFile, {
-                blobHTTPHeaders: {
-                    blobContentType: selectedFile.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                }
-            });
-            setUploadedBlobUrl(blockBlobClient.url);
+            const blobUrl = await uploadToBlob(connectionString, containerName, finalBlobName, selectedFile);
+            setUploadedBlobUrl(blobUrl);
         } catch (err) {
             const message = err?.message || 'Dosya yüklenemedi. Lütfen bağlantı bilgilerini kontrol edin.';
             setUploadError(message);
@@ -119,7 +110,7 @@ export const ExcelToKB = () => {
         const hasFileUrl = Boolean(resolvedBlobUrl);
 
         // Basic validation
-        if (!connectionString || !hasFileUrl || !docIntelApiKey || !formData.kb_workspace_id) {
+        if (!connectionString || !hasFileUrl || !docIntelApiKey || !kbChatConfig.workspaceid) {
             setError("Lütfen çalıştırmadan önce Blob Storage bağlantı dizesini girin ve Excel dosyasını yükleyin (Doc Intel API Key ve Workspace ID de gereklidir).");
             return;
         }
@@ -148,10 +139,10 @@ export const ExcelToKB = () => {
                 },
                 "CerebroKBBuilderComponent-fV4VM": {
                     "knowledgebase_name": formData.kb_name,
-                    "workspace_id": formData.kb_workspace_id
+                    "workspace_id": kbChatConfig.workspaceid
                 },
                 "CerebroComponentFetcherComponent-i1UfK": {
-                    "workspace_id": formData.fetcher_workspace_id
+                    "workspace_id": kbChatConfig.workspaceid
                 },
                 "AzureBlobDownloadComponent-x5HdI": {
                     "blob_url": resolvedBlobUrl,
@@ -236,10 +227,6 @@ export const ExcelToKB = () => {
                         <div>
                             <h4 className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3">KB Oluşturucu</h4>
                             <Input label="KB Adı" name="kb_name" value={formData.kb_name} onChange={handleChange} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input label="Workspace ID" name="kb_workspace_id" value={formData.kb_workspace_id} onChange={handleChange} />
-                                <Input label="Fetcher Workspace ID" name="fetcher_workspace_id" value={formData.fetcher_workspace_id} onChange={handleChange} />
-                            </div>
                         </div>
 
                         <div className="pt-4">

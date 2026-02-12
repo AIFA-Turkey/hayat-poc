@@ -18,6 +18,12 @@ export default defineConfig({
         secure: false,
         timeout: 1200000, // 10 minutes
         proxyTimeout: 1200000, // 10 minutes
+      },
+      '/blob-proxy': {
+        target: 'https://cererpblobdev.blob.core.windows.net',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/blob-proxy/, ''),
       }
     }
   },

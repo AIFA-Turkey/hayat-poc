@@ -14,14 +14,20 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
     'x-api-key': apiKey ? `${apiKey.substring(0, 5)}...` : 'MISSING'
   });
 
+  // 20-minute timeout to match the Vite proxy timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1200000);
+
   const options = {
     method: 'POST',
     headers: headers,
     body: JSON.stringify(payload),
+    signal: controller.signal,
   };
 
   try {
     const response = await fetch(url, options);
+    clearTimeout(timeoutId);
     if (!response.ok) {
       const errorText = await response.text();
       let errorData = {};
@@ -42,6 +48,11 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
     }
     return await response.json();
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.error('Request timed out after 20 minutes');
+      throw new Error('Zaman aşımı: API isteği 20 dakika sonra zaman aşımına uğradı. Lütfen tekrar deneyin.');
+    }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       console.error('Network Error / CORS Issue detected:', error);
       throw new Error('Ağ Hatası: Cerebro API\'ye bağlanılamadı. Bu bir CORS sorunu veya ağ bağlantı problemi olabilir.');

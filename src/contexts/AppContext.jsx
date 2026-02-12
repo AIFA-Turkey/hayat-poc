@@ -9,24 +9,24 @@ export const AppProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [kbChatConfig, setKbChatConfig] = useState({
-    knowledgebase_id: '',
-    lmapiid: '',
-    workspaceid: ''
+    knowledgebase_id: import.meta.env.VITE_KB_KNOWLEDGEBASE_ID || '',
+    lmapiid: import.meta.env.VITE_KB_LMAPIID || '',
+    workspaceid: import.meta.env.VITE_KB_WORKSPACEID || ''
   });
   const [t2dChatConfig, setT2dChatConfig] = useState({
-    db_vendor_account_id: '',
-    lmapiid: ''
+    db_vendor_account_id: import.meta.env.VITE_T2D_VENDOR_ACCOUNT_ID || '',
+    lmapiid: import.meta.env.VITE_T2D_LMAPIID || ''
   });
   const [agentChatConfig, setAgentChatConfig] = useState({
     system_prompt: ''
   });
   const [blobStorageConfig, setBlobStorageConfig] = useState({
-    connection_string: '',
-    container_name: ''
+    connection_string: import.meta.env.VITE_BLOB_CONNECTION_STRING || '',
+    container_name: import.meta.env.VITE_BLOB_CONTAINER_NAME || ''
   });
   const [docIntelConfig, setDocIntelConfig] = useState({
-    api_key: '',
-    endpoint: ''
+    api_key: import.meta.env.VITE_DOC_INTEL_API_KEY || '',
+    endpoint: import.meta.env.VITE_DOC_INTEL_ENDPOINT || ''
   });
 
   const login = (key) => {
