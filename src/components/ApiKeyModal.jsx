@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import hayatLogo from '../assets/hayat-logo-zeminli.png';
 
 export const ApiKeyModal = () => {
     const { apiKey, login } = useAppContext();
@@ -20,8 +21,13 @@ export const ApiKeyModal = () => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
-                <div className="bg-indigo-600 px-8 py-6">
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Hayat Patent GPT'ye Hoş Geldiniz!</h2>
+                <div className="bg-indigo-600 px-8 py-6 flex flex-col items-center text-center">
+                    <img
+                        src={hayatLogo}
+                        alt="Hayat logo"
+                        className="h-28 w-auto object-contain mb-1"
+                    />
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Patent GPT'ye Hoş Geldiniz!</h2>
                     <p className="text-indigo-100 mt-1">Devam etmek için FlowAI API Anahtarı giriniz.</p>
                 </div>
 
