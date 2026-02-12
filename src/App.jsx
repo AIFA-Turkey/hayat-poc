@@ -18,8 +18,8 @@ function AppContent() {
         <Route path="/" element={<Layout />}>
           <Route index element={<ExcelToKB />} />
           <Route path="excel-db" element={<ExcelToDB />} />
-          <Route path="kb-chat" element={<KBChat />} />
-          <Route path="t2d-chat" element={<T2DChat />} />
+          <Route path="patent-chat" element={<KBChat />} />
+          <Route path="excel-chat" element={<T2DChat />} />
           <Route path="agent-chat" element={<AgentChat />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

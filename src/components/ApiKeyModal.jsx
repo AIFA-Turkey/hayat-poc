@@ -11,7 +11,7 @@ export const ApiKeyModal = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!inputValue.trim()) {
-            setError('API Key is required');
+            setError('API anahtarı gerekmektedir');
             return;
         }
         login(inputValue.trim());
@@ -21,15 +21,15 @@ export const ApiKeyModal = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
                 <div className="bg-indigo-600 px-8 py-6">
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Welcome to Cerebro</h2>
-                    <p className="text-indigo-100 mt-1">Please enter your API key to continue.</p>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Hayat Patent GPT'ye Hoş Geldiniz!</h2>
+                    <p className="text-indigo-100 mt-1">Devam etmek için FlowAI API Anahtarı giriniz.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="apiKey" className="block text-sm font-medium text-slate-700 mb-1">
-                                Cerebro API Key
+                                FlowAI API Anahtarı
                             </label>
                             <input
                                 id="apiKey"
@@ -49,13 +49,13 @@ export const ApiKeyModal = () => {
                             type="submit"
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
                         >
-                            Access Dashboard
+                            Panele Giriş
                         </button>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">
-                            Enterprise AI Solutions
+                            Kurumsal Yapay Zeka Çözümleri
                         </p>
                     </div>
                 </form>

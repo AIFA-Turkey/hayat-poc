@@ -11,12 +11,12 @@ describe('ExcelToKB', () => {
             </AppProvider>
         );
 
-        expect(screen.getByText(/Excel to KB/i)).toBeInTheDocument();
-        expect(screen.getByText(/Azure Blob Download/i)).toBeInTheDocument();
-        expect(screen.getByText(/Data Prep/i)).toBeInTheDocument();
+        expect(screen.getByText(/Excel'den KB'ye/i)).toBeInTheDocument();
+        expect(screen.getByText(/Azure Blob İndirme/i)).toBeInTheDocument();
+        expect(screen.getByText(/Veri Hazırlama/i)).toBeInTheDocument();
         expect(screen.getByText(/Azure Doc Intelligence/i)).toBeInTheDocument();
-        expect(screen.getByText(/KB Builder/i)).toBeInTheDocument();
-        expect(screen.getByText(/Azure Blob Upload/i)).toBeInTheDocument();
+        expect(screen.getByText(/KB Oluşturucu/i)).toBeInTheDocument();
+        expect(screen.getByText(/Azure Blob Yükleme/i)).toBeInTheDocument();
     });
 
     it('updates form values', () => {
@@ -26,8 +26,8 @@ describe('ExcelToKB', () => {
             </AppProvider>
         );
 
-        const titleInput = screen.getByDisplayValue('Title');
-        fireEvent.change(titleInput, { target: { value: 'New Title' } });
-        expect(titleInput.value).toBe('New Title');
+        const titleInput = screen.getByDisplayValue('Başlık');
+        fireEvent.change(titleInput, { target: { value: 'Yeni Başlık' } });
+        expect(titleInput.value).toBe('Yeni Başlık');
     });
 });

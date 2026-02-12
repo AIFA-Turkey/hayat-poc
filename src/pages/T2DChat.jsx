@@ -41,7 +41,7 @@ const T2DMessage = ({ text, isBot }) => {
                     <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 flex gap-3">
                         <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
                         <div>
-                            <div className="text-[10px] uppercase font-bold text-indigo-500 mb-1">Rephrased Question</div>
+                            <div className="text-[10px] uppercase font-bold text-indigo-500 mb-1">Yeniden İfade Edilen Soru</div>
                             <div className="text-slate-700 italic">{parsed.rephrased}</div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@ const T2DMessage = ({ text, isBot }) => {
                     <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-800">
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border-b border-slate-700">
                             <Terminal size={12} className="text-emerald-400" />
-                            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Generated SQL</span>
+                            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Oluşturulan SQL</span>
                         </div>
                         <pre className="p-3 text-xs text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">
                             {parsed.sql}
@@ -71,7 +71,7 @@ const T2DMessage = ({ text, isBot }) => {
 
 export const T2DChat = () => {
     const { token, apiKey } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'Hello! I can help you query your database. What would you like to know?', isBot: true }]);
+    const [messages, setMessages] = useState([{ text: 'Merhaba! Patent Veritabanınızı sorgulamanıza yardımcı olabilirim. Ne öğrenmek istersiniz?', isBot: true }]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -90,7 +90,7 @@ export const T2DChat = () => {
         // Basic validation for required IDs
         if (!config.db_vendor_account_id || !config.lmapiid) {
             setMessages(prev => [...prev, {
-                text: 'Error: Please configure Vendor Account ID and LMap IID in the Settings sidebar first.',
+                text: 'Hata: Lütfen önce Ayarlar yan panelinde Vendor Account ID ve LMap IID değerlerini yapılandırın.',
                 isBot: true
             }]);
             return;
@@ -117,7 +117,7 @@ export const T2DChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.T2D_CHAT, payload, token, apiKey);
 
-            let botText = "Received response from server.";
+            let botText = "Sunucudan yanıt alındı.";
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -130,7 +130,7 @@ export const T2DChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Error: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -144,8 +144,8 @@ export const T2DChat = () => {
                         <MessageSquare size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">T2D Chat</h1>
-                        <p className="text-slate-500">Text-to-Database Query Interface</p>
+                        <h1 className="text-2xl font-bold text-slate-900">T2D Sohbeti</h1>
+                        <p className="text-slate-500">Metinden Veritabanına Sorgu Arayüzü</p>
                     </div>
                 </div>
 
@@ -160,7 +160,7 @@ export const T2DChat = () => {
                                     <Database size={16} className="animate-pulse" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Querying database...
+                                    Veritabanı sorgulanıyor...
                                 </div>
                             </div>
                         )}
@@ -178,16 +178,16 @@ export const T2DChat = () => {
             </div>
 
             <div className="w-80 shrink-0">
-                <Card title="Settings" className="h-full">
+                <Card title="Ayarlar" className="h-full">
                     <div className="space-y-4">
                         <Input label="Vendor Account ID" name="db_vendor_account_id" value={config.db_vendor_account_id} onChange={handleConfigChange} />
                         <Input label="LMap IID" name="lmapiid" value={config.lmapiid} onChange={handleConfigChange} />
                     </div>
 
                     <div className="mt-6 p-4 rounded-lg bg-cyan-50 border border-cyan-100">
-                        <h4 className="text-cyan-700 text-xs font-bold uppercase mb-2">DB Context</h4>
+                        <h4 className="text-cyan-700 text-xs font-bold uppercase mb-2">Veritabanı Bağlamı</h4>
                         <p className="text-cyan-600/80 text-xs leading-relaxed">
-                            Ensure the Vendor Account ID matches your database registration to execute valid queries.
+                            Geçerli sorgular çalıştırmak için Vendor Account ID'nin veritabanı kaydınızla eşleştiğinden emin olun.
                         </p>
                     </div>
                 </Card>

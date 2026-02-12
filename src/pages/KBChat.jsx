@@ -8,7 +8,7 @@ import { useAppContext } from '../contexts/AppContext';
 
 export const KBChat = () => {
     const { token, apiKey } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'Hello! How can I help you with the Knowledge Base today?', isBot: true }]);
+    const [messages, setMessages] = useState([{ text: 'Merhaba! Bugün Patent araştırmalarınızda nasıl yardımcı olabilirim?', isBot: true }]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -28,7 +28,7 @@ export const KBChat = () => {
         // Basic validation for required IDs
         if (!config.knowledgebase_id || !config.lmapiid || !config.workspaceid) {
             setMessages(prev => [...prev, {
-                text: 'Error: Please configure Knowledge Base ID, LMap IID, and Workspace ID in the Settings sidebar first.',
+                text: 'Hata: Lütfen önce Ayarlar yan panelinde Knowledge Base ID, LMap IID ve Workspace ID değerlerini yapılandırın.',
                 isBot: true
             }]);
             return;
@@ -56,7 +56,7 @@ export const KBChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.KB_CHAT, payload, token, apiKey);
 
-            let botText = "Received response from server.";
+            let botText = "Sunucudan yanıt alındı.";
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -69,7 +69,7 @@ export const KBChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Error: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -83,8 +83,8 @@ export const KBChat = () => {
                         <MessageSquare size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">KB Chat</h1>
-                        <p className="text-slate-500">Chat with your Knowledge Base</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Patent Sohbeti</h1>
+                        <p className="text-slate-500">Patent Bilgi Bankanızla sohbet edin</p>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@ export const KBChat = () => {
                                     <Sparkles size={16} className="animate-spin" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Thinking...
+                                    Düşünüyor...
                                 </div>
                             </div>
                         )}
@@ -117,7 +117,7 @@ export const KBChat = () => {
             </div>
 
             <div className="w-80 shrink-0">
-                <Card title="Settings" className="h-full">
+                <Card title="Ayarlar" className="h-full">
                     <div className="space-y-4">
                         <Input label="Knowledge Base ID" name="knowledgebase_id" value={config.knowledgebase_id} onChange={handleConfigChange} />
                         <Input label="LMap IID" name="lmapiid" value={config.lmapiid} onChange={handleConfigChange} />
@@ -125,9 +125,9 @@ export const KBChat = () => {
                     </div>
 
                     <div className="mt-6 p-4 rounded-lg bg-indigo-50 border border-indigo-100">
-                        <h4 className="text-indigo-700 text-xs font-bold uppercase mb-2">Context Info</h4>
+                        <h4 className="text-indigo-700 text-xs font-bold uppercase mb-2">Bağlam Bilgisi</h4>
                         <p className="text-indigo-600/80 text-xs leading-relaxed">
-                            Configure the IDs to connect to the specific knowledge base context. This ensures the chat uses the correct data source.
+                            Belirli bilgi bankası bağlamına bağlanmak için ID'leri yapılandırın. Bu, sohbetin doğru veri kaynağını kullanmasını sağlar.
                         </p>
                     </div>
                 </Card>

@@ -10,7 +10,7 @@ describe('ApiKeyModal', () => {
                 <ApiKeyModal />
             </AppProvider>
         );
-        expect(screen.getByText(/Welcome to Cerebro/i)).toBeInTheDocument();
+        expect(screen.getByText(/Patent GPT'ye Hoş Geldiniz!/i)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/sk-.../i)).toBeInTheDocument();
     });
 
@@ -21,10 +21,10 @@ describe('ApiKeyModal', () => {
             </AppProvider>
         );
 
-        const button = screen.getByRole('button', { name: /Access Dashboard/i });
+        const button = screen.getByRole('button', { name: /Panele Eriş/i });
         fireEvent.click(button);
 
-        expect(screen.getByText(/API Key is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/API anahtarı gerekmektedir!/i)).toBeInTheDocument();
     });
 
     it('submits key and disappears', async () => {
@@ -35,7 +35,7 @@ describe('ApiKeyModal', () => {
         );
 
         const input = screen.getByPlaceholderText(/sk-.../i);
-        const button = screen.getByRole('button', { name: /Access Dashboard/i });
+        const button = screen.getByRole('button', { name: /Panele Giriş/i });
 
         fireEvent.change(input, { target: { value: 'test-api-key' } });
         fireEvent.click(button);

@@ -8,7 +8,7 @@ import { useAppContext } from '../contexts/AppContext';
 
 export const AgentChat = () => {
     const { token, apiKey } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'I am your autonomous agent. How can I assist you?', isBot: true }]);
+    const [messages, setMessages] = useState([{ text: 'Ben Patent Araştırma ajanınızım. Nasıl yardımcı olabilirim?', isBot: true }]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export const AgentChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.AGENT_CHAT, payload, token, apiKey);
 
-            let botText = "Received response from server.";
+            let botText = "Sunucudan yanıt alındı.";
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -56,7 +56,7 @@ export const AgentChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Error: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -70,8 +70,8 @@ export const AgentChat = () => {
                         <Bot size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Agent Chat</h1>
-                        <p className="text-slate-500">Interact with a customizable AI Agent</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Ajan Sohbeti</h1>
+                        <p className="text-slate-500">Özelleştirilebilir bir Yapay Zeka Ajanı ile etkileşime geçin</p>
                     </div>
                 </div>
 
@@ -86,7 +86,7 @@ export const AgentChat = () => {
                                     <Sparkles size={16} className="animate-bounce" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Agent is processing...
+                                    Ajan işlem yapıyor...
                                 </div>
                             </div>
                         )}
@@ -104,23 +104,23 @@ export const AgentChat = () => {
             </div>
 
             <div className="w-80 shrink-0">
-                <Card title="Agent Config" className="h-full">
+                <Card title="Ajan Yapılandırması" className="h-full">
                     <div className="space-y-4">
                         <TextArea
-                            label="System Prompt"
+                            label="Sistem İstemi"
                             name="system_prompt"
                             value={config.system_prompt}
                             onChange={handleConfigChange}
-                            placeholder="You are a helpful assistant..."
+                            placeholder="Sen yardımcı bir asistansın..."
                             className="h-64"
                             rows={10}
                         />
                     </div>
 
                     <div className="mt-6 p-4 rounded-lg bg-pink-50 border border-pink-100">
-                        <h4 className="text-pink-700 text-xs font-bold uppercase mb-2">Prompt Engineering</h4>
+                        <h4 className="text-pink-700 text-xs font-bold uppercase mb-2">İstem Mühendisliği</h4>
                         <p className="text-pink-600/80 text-xs leading-relaxed">
-                            Define the persona and behavioral constraints for the agent here. This prompt is injected into the context of every message.
+                            Ajanın kişiliğini ve davranış kısıtlarını burada tanımlayın. Bu istem, her mesajın bağlamına eklenir.
                         </p>
                     </div>
                 </Card>

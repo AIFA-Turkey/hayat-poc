@@ -37,14 +37,14 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
       });
       
       // Extract the most descriptive error message
-      const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || `HTTP error! status: ${response.status}`;
+      const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || `HTTP hatası! durum: ${response.status}`;
       throw new Error(message);
     }
     return await response.json();
   } catch (error) {
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       console.error('Network Error / CORS Issue detected:', error);
-      throw new Error('Network Error: Failed to connect to Cerebro API. This might be a CORS issue or network connectivity problem.');
+      throw new Error('Ağ Hatası: Cerebro API\'ye bağlanılamadı. Bu bir CORS sorunu veya ağ bağlantı problemi olabilir.');
     }
     console.error('API Error:', error);
     throw error;

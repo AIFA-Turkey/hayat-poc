@@ -57,7 +57,7 @@ export const ChatInput = ({ value, onChange, onSend, disabled }) => {
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={disabled}
-                placeholder="Type a message..."
+                placeholder="Bir mesaj yazın..."
                 rows={1}
                 className="w-full pr-12 pl-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-slate-900 placeholder-slate-400 resize-none overflow-hidden shadow-sm"
             />

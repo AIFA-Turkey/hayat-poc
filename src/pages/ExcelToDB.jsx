@@ -29,7 +29,7 @@ export const ExcelToDB = () => {
 
         // Basic validation
         if (!formData.blob_url || !formData.vendor_db_name || !formData.workspace_id) {
-            setError('Please fill in required fields (Blob URL, Vendor DB Name, and Workspace ID) before running.');
+            setError("Lütfen çalıştırmadan önce gerekli alanları doldurun (Blob URL, Vendor DB Adı ve Workspace ID).");
             return;
         }
 
@@ -71,22 +71,22 @@ export const ExcelToDB = () => {
                     <Database size={28} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Excel to DB</h1>
-                    <p className="text-slate-500">Process Excel files and register to Cerebro Database</p>
+                    <h1 className="text-2xl font-bold text-slate-900">Excel'den DB'ye</h1>
+                    <p className="text-slate-500">Excel dosyalarını işleyip Patent GPT Veritabanına kaydedin</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                <Card title="Configuration" className="h-fit">
+                <Card title="Yapılandırma" className="h-fit">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">Azure Blob Download</h4>
+                            <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">Azure Blob İndirme</h4>
                             <Input label="Blob URL" name="blob_url" value={formData.blob_url} onChange={handleChange} placeholder="https://..." />
-                            <Input label="Connection String" name="blob_connection_string" value={formData.blob_connection_string} onChange={handleChange} type="password" />
+                            <Input label="Bağlantı Dizesi" name="blob_connection_string" value={formData.blob_connection_string} onChange={handleChange} type="password" />
                         </div>
 
                         <div>
-                            <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">Registrar Config</h4>
+                            <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">Kayıt Yapılandırması</h4>
                             <Input label="Vendor DB Name" name="vendor_db_name" value={formData.vendor_db_name} onChange={handleChange} />
                             <Input label="Workspace ID" name="workspace_id" value={formData.workspace_id} onChange={handleChange} />
                         </div>
@@ -94,17 +94,17 @@ export const ExcelToDB = () => {
                         <div className="pt-4">
                             <Button type="submit" className="w-full py-3 text-base shadow-md bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500" disabled={loading}>
                                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Play className="mr-2" />}
-                                {loading ? 'Processing...' : 'Run Pipeline'}
+                                {loading ? 'İşleniyor...' : 'Akışı Çalıştır'}
                             </Button>
                         </div>
                     </form>
                 </Card>
 
                 <div className="sticky top-6">
-                    <Card title="Status & Output" className="min-h-[400px]">
+                    <Card title="Durum ve Çıktı" className="min-h-[400px]">
                         {error && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4">
-                                <div className="font-semibold mb-1">Error Occurred</div>
+                                <div className="font-semibold mb-1">Hata Oluştu</div>
                                 {error}
                             </motion.div>
                         )}
@@ -112,24 +112,24 @@ export const ExcelToDB = () => {
                         {!result && !error && !loading && (
                             <div className="h-64 flex flex-col items-center justify-center text-slate-400">
                                 <FileJson size={48} className="mb-4 opacity-50" />
-                                <p>Output will appear here</p>
+                                <p>Çıktı burada görünecek</p>
                             </div>
                         )}
 
                         {loading && (
                             <div className="h-64 flex flex-col items-center justify-center text-cyan-600">
                                 <Loader2 size={48} className="animate-spin mb-4" />
-                                <p className="text-slate-600 font-medium">Waiting for Cerebro...</p>
+                                <p className="text-slate-600 font-medium">Patent GPT yanıtı bekleniyor...</p>
                             </div>
                         )}
 
                         {result && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm mb-4">
-                                    <div className="font-semibold">Pipeline Completed Successfully</div>
+                                    <div className="font-semibold">Akış başarıyla tamamlandı</div>
                                 </div>
 
-                                <h4 className="font-medium text-slate-700 text-sm">Raw Response:</h4>
+                                <h4 className="font-medium text-slate-700 text-sm">İşlenmemiş Yanıt:</h4>
                                 <div className="relative">
                                     <pre className="p-4 rounded-lg bg-slate-50 border border-slate-200 overflow-x-auto text-xs text-slate-600 font-mono">
                                         {JSON.stringify(result, null, 2)}
