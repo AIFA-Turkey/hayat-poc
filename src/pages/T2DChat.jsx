@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MessageSquare, Database, Sparkles, Terminal, Info } from 'lucide-react';
+import { MessageSquare, Database, Sparkles, Terminal, Info, ChevronRight, ChevronDown } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
@@ -9,6 +9,8 @@ import { useAppContext } from '../contexts/AppContext';
  * Parses [REPHRASED], [SQL], [RESULT] sections
  */
 const T2DMessage = ({ text, isBot }) => {
+    const [isRephrasedExpanded, setIsRephrasedExpanded] = useState(false);
+    const [isSqlExpanded, setIsSqlExpanded] = useState(false);
     const parsed = useMemo(() => {
         if (!isBot) return null;
 
@@ -36,24 +38,36 @@ const T2DMessage = ({ text, isBot }) => {
         <ChatBubble isBot={isBot} message={
             <div className="space-y-4">
                 {parsed.rephrased && (
-                    <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 flex gap-3">
-                        <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
-                        <div>
-                            <div className="text-[10px] uppercase font-bold text-indigo-500 mb-1">Yeniden İfade Edilen Soru</div>
-                            <div className="text-slate-700 italic">{parsed.rephrased}</div>
-                        </div>
+                    <div className="bg-indigo-50/50 rounded-lg border border-indigo-100">
+                        <button
+                            onClick={() => setIsRephrasedExpanded(prev => !prev)}
+                            className="w-full flex items-center gap-2 p-3 text-left cursor-pointer hover:bg-indigo-50 rounded-lg transition-colors"
+                        >
+                            {isRephrasedExpanded ? <ChevronDown size={14} className="text-indigo-500 shrink-0" /> : <ChevronRight size={14} className="text-indigo-500 shrink-0" />}
+                            <Info size={14} className="text-indigo-600 shrink-0" />
+                            <span className="text-[10px] uppercase font-bold text-indigo-500">Yeniden İfade Edilen Soru</span>
+                        </button>
+                        {isRephrasedExpanded && (
+                            <div className="px-3 pb-3 pl-10 text-slate-700 italic">{parsed.rephrased}</div>
+                        )}
                     </div>
                 )}
 
                 {parsed.sql && (
                     <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-800">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border-b border-slate-700">
+                        <button
+                            onClick={() => setIsSqlExpanded(prev => !prev)}
+                            className="w-full flex items-center gap-2 px-3 py-1.5 bg-slate-800 border-b border-slate-700 cursor-pointer hover:bg-slate-700 transition-colors"
+                        >
+                            {isSqlExpanded ? <ChevronDown size={12} className="text-emerald-400 shrink-0" /> : <ChevronRight size={12} className="text-emerald-400 shrink-0" />}
                             <Terminal size={12} className="text-emerald-400" />
                             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Oluşturulan SQL</span>
-                        </div>
-                        <pre className="p-3 text-xs text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">
-                            {parsed.sql}
-                        </pre>
+                        </button>
+                        {isSqlExpanded && (
+                            <pre className="p-3 text-xs text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">
+                                {parsed.sql}
+                            </pre>
+                        )}
                     </div>
                 )}
 
