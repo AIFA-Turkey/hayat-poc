@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Play, Loader2, FileJson } from 'lucide-react';
 import { uploadToBlob } from '../services/blobUpload';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
-import { runFlow, FLOW_IDS } from '../services/api';
+import { startFlowRun, getFlowRunStatus, interpretFlowStatus, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
 
 const ALLOWED_EXCEL_TYPES = new Set([
@@ -28,10 +28,18 @@ export const ExcelToKB = () => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
+    const [statusMessage, setStatusMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [uploadedBlobUrl, setUploadedBlobUrl] = useState('');
+    const pollIntervalRef = useRef(null);
+    const pollStartedAtRef = useRef(null);
+    const pollingInFlightRef = useRef(false);
+    const activeHandleRef = useRef(null);
+
+    const POLL_INTERVAL_MS = 5000;
+    const MAX_POLL_DURATION_MS = 30 * 60 * 1000;
 
     const [formData, setFormData] = useState({
         title_column: 'Başlık',
@@ -100,6 +108,18 @@ export const ExcelToKB = () => {
         }
     };
 
+    const stopPolling = useCallback(() => {
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+        pollingInFlightRef.current = false;
+        activeHandleRef.current = null;
+        pollStartedAtRef.current = null;
+    }, []);
+
+    useEffect(() => () => stopPolling(), [stopPolling]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -115,9 +135,11 @@ export const ExcelToKB = () => {
             return;
         }
 
+        stopPolling();
         setLoading(true);
         setError('');
         setResult(null);
+        setStatusMessage('İşlem başlatılıyor...');
 
         const payload = {
             input_value: "hello world!",
@@ -152,12 +174,84 @@ export const ExcelToKB = () => {
         };
 
         try {
-            const response = await runFlow(FLOW_IDS.EXCEL_2_KB, payload, token, apiKey);
-            setResult(response);
+            const startResponse = await startFlowRun(FLOW_IDS.EXCEL_2_KB, payload, token, apiKey);
+            const data = startResponse?.data ?? null;
+            const handle = startResponse?.handle ?? null;
+            const statusInfo = interpretFlowStatus(data || {});
+
+            if (statusInfo.isError) {
+                setError(statusInfo.error || 'İşlem başlatılırken hata oluştu.');
+                setLoading(false);
+                setStatusMessage('');
+                return;
+            }
+
+            if (statusInfo.isSuccess) {
+                setResult(statusInfo.result ?? data);
+                setLoading(false);
+                setStatusMessage('');
+                return;
+            }
+
+            if (!handle || (!handle.statusUrl && !handle.taskId && !handle.runId && !handle.jobId)) {
+                setError('İşlem başlatıldı ancak durum takibi için bir kimlik alınamadı.');
+                setLoading(false);
+                setStatusMessage('');
+                return;
+            }
+
+            activeHandleRef.current = handle;
+            pollStartedAtRef.current = Date.now();
+            setStatusMessage(statusInfo.status ? `İşleniyor (${statusInfo.status})...` : 'İşleniyor...');
+
+            const poll = async () => {
+                if (!activeHandleRef.current || pollingInFlightRef.current) return;
+                if (pollStartedAtRef.current && Date.now() - pollStartedAtRef.current > MAX_POLL_DURATION_MS) {
+                    setError('İşlem zaman aşımına uğradı. Lütfen daha sonra tekrar deneyin.');
+                    setLoading(false);
+                    stopPolling();
+                    return;
+                }
+
+                pollingInFlightRef.current = true;
+                try {
+                    const statusData = await getFlowRunStatus(activeHandleRef.current, token, apiKey);
+                    const nextStatus = interpretFlowStatus(statusData || {});
+
+                    if (nextStatus.isError) {
+                        setError(nextStatus.error || 'İşlem sırasında hata oluştu.');
+                        setLoading(false);
+                        stopPolling();
+                        return;
+                    }
+
+                    if (nextStatus.isSuccess) {
+                        setResult(nextStatus.result ?? statusData);
+                        setLoading(false);
+                        setStatusMessage('');
+                        stopPolling();
+                        return;
+                    }
+
+                    setStatusMessage(nextStatus.status ? `İşleniyor (${nextStatus.status})...` : 'İşleniyor...');
+                } catch (err) {
+                    setError(err.message || 'Durum kontrolü sırasında hata oluştu.');
+                    setLoading(false);
+                    stopPolling();
+                } finally {
+                    pollingInFlightRef.current = false;
+                }
+            };
+
+            await poll();
+            if (!activeHandleRef.current) {
+                return;
+            }
+            pollIntervalRef.current = setInterval(poll, POLL_INTERVAL_MS);
         } catch (err) {
             setError(err.message);
-        } finally {
             setLoading(false);
+            setStatusMessage('');
         }
     };
 
@@ -257,7 +351,7 @@ export const ExcelToKB = () => {
                         {loading && (
                             <div className="h-64 flex flex-col items-center justify-center text-indigo-600">
                                 <Loader2 size={48} className="animate-spin mb-4" />
-                                <p className="text-slate-600 font-medium">Cerebro yanıtı bekleniyor...</p>
+                                <p className="text-slate-600 font-medium">{statusMessage || 'Cerebro yanıtı bekleniyor...'}</p>
                             </div>
                         )}
 

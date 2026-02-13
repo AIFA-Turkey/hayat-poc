@@ -1,11 +1,170 @@
+const buildHeaders = (token, apiKey) => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`,
+  'x-api-key': apiKey,
+});
+
+const readResponsePayload = async (response) => {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return text;
+  }
+};
+
+const fetchWithTimeout = async (url, options, timeoutMs) => {
+  if (!timeoutMs) {
+    return fetch(url, options);
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const START_URL_TEMPLATE = import.meta.env.VITE_FLOW_START_URL_TEMPLATE;
+const START_QUERY = import.meta.env.VITE_FLOW_START_QUERY ?? 'async=true';
+const STATUS_URL_TEMPLATE = import.meta.env.VITE_FLOW_STATUS_URL_TEMPLATE;
+
+const normalizeProxyUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.startsWith('/api/') && !url.startsWith('/api/flowai')) {
+    return `/api/flowai${url}`;
+  }
+  return url;
+};
+
+const resolveStartUrl = (flowId) => {
+  let url = START_URL_TEMPLATE
+    ? (START_URL_TEMPLATE.includes('{flowId}')
+      ? START_URL_TEMPLATE.replace('{flowId}', flowId)
+      : `${START_URL_TEMPLATE.replace(/\/$/, '')}/${flowId}`)
+    : `/api/flowai/api/v1/run/${flowId}`;
+
+  if (START_QUERY) {
+    const joiner = url.includes('?') ? '&' : '?';
+    url = `${url}${joiner}${START_QUERY}`;
+  }
+  return normalizeProxyUrl(url);
+};
+
+const extractFlowHandle = (data) => {
+  if (!data || typeof data !== 'object') return {};
+  const statusUrl = data.status_url || data.statusUrl || data.poll_url || data.pollUrl || data.result_url || data.resultUrl || data.url;
+  const taskId = data.task_id || data.taskId;
+  const runId = data.run_id || data.runId;
+  const jobId = data.job_id || data.jobId;
+
+  if (statusUrl || taskId || runId || jobId) {
+    return { statusUrl, taskId, runId, jobId };
+  }
+  if (data.data) return extractFlowHandle(data.data);
+  if (data.result) return extractFlowHandle(data.result);
+  return {};
+};
+
+const resolveStatusUrl = (handle) => {
+  if (!handle) return null;
+  if (typeof handle === 'string') return normalizeProxyUrl(handle);
+  if (handle.statusUrl) return normalizeProxyUrl(handle.statusUrl);
+
+  if (STATUS_URL_TEMPLATE) {
+    if (STATUS_URL_TEMPLATE.includes('{taskId}') && handle.taskId) {
+      return normalizeProxyUrl(STATUS_URL_TEMPLATE.replace('{taskId}', handle.taskId));
+    }
+    if (STATUS_URL_TEMPLATE.includes('{runId}') && handle.runId) {
+      return normalizeProxyUrl(STATUS_URL_TEMPLATE.replace('{runId}', handle.runId));
+    }
+    if (STATUS_URL_TEMPLATE.includes('{jobId}') && handle.jobId) {
+      return normalizeProxyUrl(STATUS_URL_TEMPLATE.replace('{jobId}', handle.jobId));
+    }
+    if (STATUS_URL_TEMPLATE.includes('{id}')) {
+      const id = handle.taskId || handle.runId || handle.jobId;
+      if (id) return normalizeProxyUrl(STATUS_URL_TEMPLATE.replace('{id}', id));
+    }
+  }
+
+  if (handle.taskId) return `/api/flowai/api/v1/task/${handle.taskId}`;
+  if (handle.runId) return `/api/flowai/api/v1/run/${handle.runId}`;
+  if (handle.jobId) return `/api/flowai/api/v1/build/${handle.jobId}/events`;
+  return null;
+};
+
+const SUCCESS_STATUSES = new Set(['success', 'succeeded', 'completed', 'done', 'finished']);
+const ERROR_STATUSES = new Set(['error', 'failed', 'failure', 'canceled', 'cancelled', 'revoked']);
+const RUNNING_STATUSES = new Set(['pending', 'queued', 'running', 'started', 'in_progress', 'in progress', 'processing', 'retry']);
+
+export const interpretFlowStatus = (data = {}) => {
+  const rawStatus = data?.status ?? data?.state ?? data?.phase ?? data?.task_status ?? '';
+  const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase() : '';
+  const result = data?.result ?? data?.output ?? data?.outputs ?? data?.data ?? data?.response ?? null;
+  const error = data?.error ?? data?.detail ?? data?.message ?? null;
+  const hasResult = result !== null && result !== undefined;
+
+  const isError = ERROR_STATUSES.has(status) || (!status && error);
+  const isSuccess = SUCCESS_STATUSES.has(status) || (hasResult && !ERROR_STATUSES.has(status) && !RUNNING_STATUSES.has(status));
+  const isRunning = RUNNING_STATUSES.has(status);
+
+  return { status, result, error, isSuccess, isError, isRunning };
+};
+
+export const startFlowRun = async (flowId, payload, token, apiKey, timeoutMs = 30000) => {
+  const url = resolveStartUrl(flowId);
+  const headers = buildHeaders(token, apiKey);
+
+  try {
+    const response = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    }, timeoutMs);
+
+    const data = await readResponsePayload(response);
+    if (!response.ok) {
+      const message = data?.detail || data?.message || data?.error || (typeof data === 'string' ? data : null) || `HTTP hatası! durum: ${response.status}`;
+      throw new Error(message);
+    }
+    return { data, handle: extractFlowHandle(data) };
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Zaman aşımı: İşlem başlatılamadı. Lütfen tekrar deneyin.');
+    }
+    throw error;
+  }
+};
+
+export const getFlowRunStatus = async (handle, token, apiKey, timeoutMs = 15000) => {
+  const url = resolveStatusUrl(handle);
+  if (!url) {
+    throw new Error('Durum kontrolü için geçerli bir URL bulunamadı.');
+  }
+
+  const headers = buildHeaders(token, apiKey);
+  try {
+    const response = await fetchWithTimeout(url, { method: 'GET', headers }, timeoutMs);
+    const data = await readResponsePayload(response);
+    if (!response.ok) {
+      const message = data?.detail || data?.message || data?.error || (typeof data === 'string' ? data : null) || `HTTP hatası! durum: ${response.status}`;
+      throw new Error(message);
+    }
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Zaman aşımı: Durum kontrolü zaman aşımına uğradı.');
+    }
+    throw error;
+  }
+};
+
 export const runFlow = async (flowId, payload, token, apiKey) => {
   const url = `/api/flowai/api/v1/run/${flowId}`;
   
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    'x-api-key': apiKey,
-  };
+  const headers = buildHeaders(token, apiKey);
 
   console.log(`API Request: ${url}`);
   console.log('Headers:', { 

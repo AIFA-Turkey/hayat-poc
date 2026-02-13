@@ -53,10 +53,10 @@ export const Layout = () => {
                     <NavItem to="/agent-chat" icon={Bot} label="Ajan Bazlı Sohbet" />
 
                     <div className="px-3 pb-2 pt-4">
-                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">İş Akışları</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kaynak Dosya Yönetimi</span>
                     </div>
                     <NavItem to="/excel-kb" icon={LayoutDashboard} label="Excel'den Bilgi Bankasına" />
-                    <NavItem to="/excel-db" icon={Database} label="Excel'den Verıtabanına" />
+                    <NavItem to="/excel-db" icon={Database} label="Excel'den Veritabanına" />
 
                     <div className="px-3 pb-2 pt-4">
                         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Yapılandırma</span>
