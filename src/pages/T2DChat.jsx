@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MessageSquare, Database, Sparkles, Terminal, Info, ChevronRight, ChevronDown } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
@@ -91,6 +91,20 @@ export const T2DChat = () => {
     ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setMessages((prev) => {
+            if (!prev || prev.length === 0) {
+                return [{ text: t('home.chatTypes.t2d.greeting'), isBot: true }];
+            }
+            if (prev.length === 1 && prev[0]?.isBot) {
+                const nextText = t('home.chatTypes.t2d.greeting');
+                if (prev[0].text === nextText) return prev;
+                return [{ ...prev[0], text: nextText }];
+            }
+            return prev;
+        });
+    }, [t]);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;

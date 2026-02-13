@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MessageSquare, Sparkles } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
@@ -13,6 +13,20 @@ export const KBChat = () => {
     ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setMessages((prev) => {
+            if (!prev || prev.length === 0) {
+                return [{ text: t('home.chatTypes.kb.greeting'), isBot: true }];
+            }
+            if (prev.length === 1 && prev[0]?.isBot) {
+                const nextText = t('home.chatTypes.kb.greeting');
+                if (prev[0].text === nextText) return prev;
+                return [{ ...prev[0], text: nextText }];
+            }
+            return prev;
+        });
+    }, [t]);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;

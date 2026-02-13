@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bot, Terminal, Sparkles } from 'lucide-react';
 import { Card } from '../components/Card';
 import { TextArea } from '../components/Input';
@@ -15,6 +15,20 @@ export const AgentChat = () => {
     ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setMessages((prev) => {
+            if (!prev || prev.length === 0) {
+                return [{ text: t('home.chatTypes.agent.greeting'), isBot: true }];
+            }
+            if (prev.length === 1 && prev[0]?.isBot) {
+                const nextText = t('home.chatTypes.agent.greeting');
+                if (prev[0].text === nextText) return prev;
+                return [{ ...prev[0], text: nextText }];
+            }
+            return prev;
+        });
+    }, [t]);
 
     const [config, setConfig] = useState({
         system_prompt: ''

@@ -330,6 +330,30 @@ export const Home = () => {
 
     const [messagesByType, setMessagesByType] = useState(initialMessages);
 
+    useEffect(() => {
+        setMessagesByType((prev) => {
+            let hasChanges = false;
+            const next = { ...prev };
+
+            chatTypes.forEach((chat) => {
+                const existing = prev[chat.id];
+                if (!existing || existing.length === 0) {
+                    next[chat.id] = [{ text: chat.greeting, isBot: true }];
+                    hasChanges = true;
+                    return;
+                }
+                if (existing.length === 1 && existing[0]?.isBot) {
+                    if (existing[0].text !== chat.greeting) {
+                        next[chat.id] = [{ ...existing[0], text: chat.greeting }];
+                        hasChanges = true;
+                    }
+                }
+            });
+
+            return hasChanges ? next : prev;
+        });
+    }, [chatTypes]);
+
     const activeChat = chatTypes.find((chat) => chat.id === selectedType);
     const activeMessages = messagesByType[selectedType] || [];
 
