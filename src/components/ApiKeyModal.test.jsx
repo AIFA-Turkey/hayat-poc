@@ -1,41 +1,49 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ApiKeyModal } from './ApiKeyModal';
 import { AppProvider } from '../contexts/AppContext';
+import { I18nProvider } from '../contexts/I18nContext';
+import { translations } from '../i18n/translations';
 
 describe('ApiKeyModal', () => {
     it('renders when no API key is present', () => {
         render(
-            <AppProvider>
-                <ApiKeyModal />
-            </AppProvider>
+            <I18nProvider>
+                <AppProvider>
+                    <ApiKeyModal />
+                </AppProvider>
+            </I18nProvider>
         );
-        expect(screen.getByText(/Patent GPT'ye Hoş Geldiniz!/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/sk-.../i)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.apiKey.welcomeTitle)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(translations.tr.apiKey.placeholder)).toBeInTheDocument();
     });
 
     it('validates empty input', () => {
         render(
-            <AppProvider>
-                <ApiKeyModal />
-            </AppProvider>
+            <I18nProvider>
+                <AppProvider>
+                    <ApiKeyModal />
+                </AppProvider>
+            </I18nProvider>
         );
 
-        const button = screen.getByRole('button', { name: /Panele Eriş/i });
+        const button = screen.getByRole('button', { name: translations.tr.apiKey.submit });
         fireEvent.click(button);
 
-        expect(screen.getByText(/API anahtarı gerekmektedir!/i)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.apiKey.requiredError)).toBeInTheDocument();
     });
 
     it('submits key and disappears', async () => {
         render(
-            <AppProvider>
-                <ApiKeyModal />
-            </AppProvider>
+            <I18nProvider>
+                <AppProvider>
+                    <ApiKeyModal />
+                </AppProvider>
+            </I18nProvider>
         );
 
-        const input = screen.getByPlaceholderText(/sk-.../i);
-        const button = screen.getByRole('button', { name: /Panele Giriş/i });
+        const input = screen.getByPlaceholderText(translations.tr.apiKey.placeholder);
+        const button = screen.getByRole('button', { name: translations.tr.apiKey.submit });
 
         fireEvent.change(input, { target: { value: 'test-api-key' } });
         fireEvent.click(button);

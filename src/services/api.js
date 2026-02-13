@@ -1,3 +1,5 @@
+import { tStatic } from '../i18n/translate';
+
 const buildHeaders = (token, apiKey) => ({
   'Content-Type': 'application/json',
   'Authorization': `Bearer ${token}`,
@@ -212,8 +214,8 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
       });
       
       // Extract the most descriptive error message
-      const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || `HTTP hatası! durum: ${response.status}`;
-      throw new Error(`${message} (${getElapsed()} sonra)`);
+      const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || tStatic('api.httpError', { status: response.status });
+      throw new Error(tStatic('api.errorAfter', { message, elapsed: getElapsed() }));
     }
     return await response.json();
   } catch (error) {
@@ -221,14 +223,14 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
     const elapsed = getElapsed();
     if (error.name === 'AbortError') {
       console.error(`Request aborted after ${elapsed}`);
-      throw new Error(`Zaman aşımı: API isteği ${elapsed} sonra zaman aşımına uğradı (AbortController). Lütfen tekrar deneyin.`);
+      throw new Error(tStatic('api.timeout', { elapsed }));
     }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       console.error(`Network Error after ${elapsed}:`, error);
-      throw new Error(`Ağ Hatası: ${elapsed} sonra bağlantı kesildi. Bu Vite proxy zaman aşımı, CORS sorunu veya ağ bağlantı problemi olabilir.`);
+      throw new Error(tStatic('api.networkError', { elapsed }));
     }
     console.error(`API Error after ${elapsed}:`, error);
-    throw new Error(`${error.message} (${elapsed} sonra)`);
+    throw new Error(tStatic('api.errorAfter', { message: error.message, elapsed }));
   }
 };
 

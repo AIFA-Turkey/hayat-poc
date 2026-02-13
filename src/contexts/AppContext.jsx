@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import keycloak from '../services/keycloak';
+import { useI18n } from './I18nContext';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  const { t } = useI18n();
   const [token, setToken] = useState(null);
   const [apiKey, setApiKey] = useState(sessionStorage.getItem('FLOW_AI_API_KEY'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -94,8 +96,8 @@ export const AppProvider = ({ children }) => {
       <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-600 font-medium">Keycloak ile kimlik doğrulanıyor...</p>
-          <p className="text-xs text-slate-400">Bu işlem uzun sürerse, tarayıcı konsolundaki hataları kontrol edin.</p>
+          <p className="text-slate-600 font-medium">{t('auth.keycloakLoading')}</p>
+          <p className="text-xs text-slate-400">{t('auth.keycloakHint')}</p>
         </div>
       </div>
     );

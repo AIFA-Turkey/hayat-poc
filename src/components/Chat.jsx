@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { Send, Bot, User } from 'lucide-react';
+import { useI18n } from '../contexts/I18nContext';
 
 export const ChatBubble = ({ message, isBot }) => {
     return (
@@ -34,6 +35,7 @@ export const ChatBubble = ({ message, isBot }) => {
 
 export const ChatInput = ({ value, onChange, onSend, disabled }) => {
     const textareaRef = useRef(null);
+    const { t } = useI18n();
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -57,13 +59,14 @@ export const ChatInput = ({ value, onChange, onSend, disabled }) => {
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={disabled}
-                placeholder="Bir mesaj yazın..."
+                placeholder={t('chat.placeholder')}
                 rows={1}
                 className="w-full pr-12 pl-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-slate-900 placeholder-slate-400 resize-none overflow-hidden shadow-sm"
             />
             <button
                 onClick={onSend}
                 disabled={!value.trim() || disabled}
+                aria-label={t('chat.send')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
                 <Send size={16} />

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import { useI18n } from '../contexts/I18nContext';
 import hayatLogo from '../assets/hayat-logo-zeminli.png';
 
 export const ApiKeyModal = () => {
     const { apiKey, login } = useAppContext();
+    const { t } = useI18n();
     const [inputValue, setInputValue] = useState('');
     const [error, setError] = useState('');
 
@@ -12,7 +14,7 @@ export const ApiKeyModal = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!inputValue.trim()) {
-            setError('API anahtarı gerekmektedir');
+            setError(t('apiKey.requiredError'));
             return;
         }
         login(inputValue.trim());
@@ -27,15 +29,15 @@ export const ApiKeyModal = () => {
                         alt="Hayat logo"
                         className="h-28 w-auto object-contain mb-1"
                     />
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Patent GPT'ye Hoş Geldiniz!</h2>
-                    <p className="text-indigo-100 mt-1">Devam etmek için FlowAI API Anahtarı giriniz.</p>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">{t('apiKey.welcomeTitle')}</h2>
+                    <p className="text-indigo-100 mt-1">{t('apiKey.welcomeSubtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="apiKey" className="block text-sm font-medium text-slate-700 mb-1">
-                                FlowAI API Anahtarı
+                                {t('apiKey.label')}
                             </label>
                             <input
                                 id="apiKey"
@@ -45,7 +47,7 @@ export const ApiKeyModal = () => {
                                     setInputValue(e.target.value);
                                     if (error) setError('');
                                 }}
-                                placeholder="sk-..."
+                                placeholder={t('apiKey.placeholder')}
                                 className={`w-full px-4 py-3 bg-slate-50 border ${error ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none`}
                             />
                             {error && <p className="text-red-500 text-xs mt-1 font-medium">{error}</p>}
@@ -55,13 +57,13 @@ export const ApiKeyModal = () => {
                             type="submit"
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
                         >
-                            Panele Giriş
+                            {t('apiKey.submit')}
                         </button>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">
-                            Kurumsal Yapay Zeka Çözümleri
+                            {t('apiKey.tagline')}
                         </p>
                     </div>
                 </form>

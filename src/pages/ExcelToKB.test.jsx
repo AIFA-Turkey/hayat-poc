@@ -2,26 +2,32 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { ExcelToKB } from '../pages/ExcelToKB';
 import { AppProvider } from '../contexts/AppContext';
+import { I18nProvider } from '../contexts/I18nContext';
+import { translations } from '../i18n/translations';
 
 describe('ExcelToKB', () => {
     it('renders all form sections', () => {
         render(
-            <AppProvider>
-                <ExcelToKB />
-            </AppProvider>
+            <I18nProvider>
+                <AppProvider>
+                    <ExcelToKB />
+                </AppProvider>
+            </I18nProvider>
         );
 
-        expect(screen.getByText(/Excel'den Bilgi Bankasına/i)).toBeInTheDocument();
-        expect(screen.getByText(/Excel Dosyası Yükleme/i)).toBeInTheDocument();
-        expect(screen.getByText(/Veri Hazırlama/i)).toBeInTheDocument();
-        expect(screen.getByText(/KB Oluşturucu/i)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.excelToKb.title)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.common.fileUpload)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.common.dataPrep)).toBeInTheDocument();
+        expect(screen.getByText(translations.tr.common.kbBuilder)).toBeInTheDocument();
     });
 
     it('updates form values', () => {
         render(
-            <AppProvider>
-                <ExcelToKB />
-            </AppProvider>
+            <I18nProvider>
+                <AppProvider>
+                    <ExcelToKB />
+                </AppProvider>
+            </I18nProvider>
         );
 
         const titleInput = screen.getByDisplayValue('Başlık');

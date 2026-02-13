@@ -9,12 +9,13 @@ import { Button } from '../components/Button';
 import { uploadToBlob } from '../services/blobUpload';
 import { runFlow, startFlowRun, getFlowRunStatus, interpretFlowStatus, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
+import { useI18n } from '../contexts/I18nContext';
 
-const CHAT_TYPES = [
+const buildChatTypes = (t) => ([
     {
         id: 'kb',
-        title: 'Patent Sohbeti',
-        description: 'Patent bilgi bankanızla sohbet edin.',
+        title: t('home.chatTypes.kb.title'),
+        description: t('home.chatTypes.kb.description'),
         icon: MessageSquare,
         tone: 'indigo',
         flowId: FLOW_IDS.KB_CHAT,
@@ -26,16 +27,16 @@ const CHAT_TYPES = [
         }),
         validate: (ctx) => {
             if (!ctx.kbChatConfig.knowledgebase_id || !ctx.kbChatConfig.lmapiid || !ctx.kbChatConfig.workspaceid) {
-                return 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Knowledge Base ID, LM API ID ve Workspace ID değerlerini yapılandırın.';
+                return t('chat.validation.kb');
             }
             return null;
         },
-        greeting: 'Merhaba! Bugün Patent araştırmalarınızda nasıl yardımcı olabilirim?'
+        greeting: t('home.chatTypes.kb.greeting')
     },
     {
         id: 't2d',
-        title: 'Excel-Analitik Sohbet',
-        description: 'Veritabanı sorularınızı doğal dille sorun.',
+        title: t('home.chatTypes.t2d.title'),
+        description: t('home.chatTypes.t2d.description'),
         icon: Database,
         tone: 'cyan',
         flowId: FLOW_IDS.T2D_CHAT,
@@ -46,16 +47,16 @@ const CHAT_TYPES = [
         }),
         validate: (ctx) => {
             if (!ctx.t2dChatConfig.db_vendor_account_id || !ctx.t2dChatConfig.lmapiid) {
-                return 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Vendor Account ID ve LM API ID değerlerini yapılandırın.';
+                return t('chat.validation.t2d');
             }
             return null;
         },
-        greeting: 'Merhaba! Patent Veritabanınızı sorgulamanıza yardımcı olabilirim. Ne öğrenmek istersiniz?'
+        greeting: t('home.chatTypes.t2d.greeting')
     },
     {
         id: 'agent',
-        title: 'Ajan Bazlı Sohbet',
-        description: 'Yapay Zeka Ajanınız sorunuza en uygun kaynaktan cevap versin',
+        title: t('home.chatTypes.agent.title'),
+        description: t('home.chatTypes.agent.description'),
         icon: Bot,
         tone: 'pink',
         flowId: FLOW_IDS.AGENT_CHAT,
@@ -64,26 +65,26 @@ const CHAT_TYPES = [
             system_prompt: ctx.agentChatConfig.system_prompt
         }),
         validate: () => null,
-        greeting: 'Ben Patent Araştırma ajanınızım. Nasıl yardımcı olabilirim?'
+        greeting: t('home.chatTypes.agent.greeting')
     }
-];
+]);
 
-const WORKFLOW_CARDS = [
+const buildWorkflowCards = (t) => ([
     {
         id: 'kb',
-        title: "Excel'den Bilgi Bankasına",
-        description: 'Patent Bilgi Bankası oluşturun.',
+        title: t('home.workflows.kb.title'),
+        description: t('home.workflows.kb.description'),
         icon: Upload,
         tone: 'emerald'
     },
     {
         id: 'db',
-        title: "Excel'den Veritabanına",
-        description: 'Patent Veritabanı oluşturun.',
+        title: t('home.workflows.db.title'),
+        description: t('home.workflows.db.description'),
         icon: Database,
         tone: 'cyan'
     }
-];
+]);
 
 const ALLOWED_EXCEL_TYPES = new Set([
     'application/vnd.ms-excel',
@@ -117,6 +118,7 @@ const buildBotMessage = (response) => {
 };
 
 const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
+    const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
@@ -149,7 +151,7 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
         setLoading(true);
         setError('');
         setResult(null);
-        setStatusMessage('İşlem başlatılıyor...');
+        setStatusMessage(t('common.starting'));
 
         try {
             const payload = buildPayload();
@@ -159,7 +161,7 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
             const statusInfo = interpretFlowStatus(data || {});
 
             if (statusInfo.isError) {
-                setError(statusInfo.error || 'İşlem başlatılırken hata oluştu.');
+                setError(statusInfo.error || t('common.flowStartError'));
                 setLoading(false);
                 setStatusMessage('');
                 return;
@@ -173,7 +175,7 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
             }
 
             if (!handle || (!handle.statusUrl && !handle.taskId && !handle.runId && !handle.jobId)) {
-                setError('İşlem başlatıldı ancak durum takibi için bir kimlik alınamadı.');
+                setError(t('common.flowNoHandle'));
                 setLoading(false);
                 setStatusMessage('');
                 return;
@@ -181,12 +183,12 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
 
             activeHandleRef.current = handle;
             pollStartedAtRef.current = Date.now();
-            setStatusMessage(statusInfo.status ? `İşleniyor (${statusInfo.status})...` : 'İşleniyor...');
+            setStatusMessage(statusInfo.status ? t('common.processingWithStatus', { status: statusInfo.status }) : t('common.processing'));
 
             const poll = async () => {
                 if (!activeHandleRef.current || pollingInFlightRef.current) return;
                 if (pollStartedAtRef.current && Date.now() - pollStartedAtRef.current > MAX_POLL_DURATION_MS) {
-                    setError('İşlem zaman aşımına uğradı. Lütfen daha sonra tekrar deneyin.');
+                    setError(t('common.flowTimeout'));
                     setLoading(false);
                     stopPolling();
                     return;
@@ -198,7 +200,7 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
                     const nextStatus = interpretFlowStatus(statusData || {});
 
                     if (nextStatus.isError) {
-                        setError(nextStatus.error || 'İşlem sırasında hata oluştu.');
+                        setError(nextStatus.error || t('common.flowRunError'));
                         setLoading(false);
                         stopPolling();
                         return;
@@ -212,9 +214,9 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
                         return;
                     }
 
-                    setStatusMessage(nextStatus.status ? `İşleniyor (${nextStatus.status})...` : 'İşleniyor...');
+                    setStatusMessage(nextStatus.status ? t('common.processingWithStatus', { status: nextStatus.status }) : t('common.processing'));
                 } catch (err) {
-                    setError(err.message || 'Durum kontrolü sırasında hata oluştu.');
+                    setError(err.message || t('common.flowStatusError'));
                     setLoading(false);
                     stopPolling();
                 } finally {
@@ -232,7 +234,7 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
             setLoading(false);
             setStatusMessage('');
         }
-    }, [buildPayload, flowId, apiKey, token, stopPolling, validate]);
+    }, [buildPayload, flowId, apiKey, token, stopPolling, validate, t]);
 
     return { loading, result, error, statusMessage, run };
 };
@@ -243,8 +245,10 @@ const ACCENT_TEXT = {
     indigo: 'text-indigo-600'
 };
 
-const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', idleLabel = 'Çıktı burada görünecek' }) => {
+const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', idleLabel }) => {
+    const { t } = useI18n();
     const accentClass = ACCENT_TEXT[accent] || ACCENT_TEXT.indigo;
+    const resolvedIdleLabel = idleLabel || t('common.outputPlaceholder');
 
     return (
         <>
@@ -254,7 +258,7 @@ const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', 
                     animate={{ opacity: 1 }}
                     className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4"
                 >
-                    <div className="font-semibold mb-1">Hata Oluştu</div>
+                    <div className="font-semibold mb-1">{t('common.errorOccurred')}</div>
                     {error}
                 </motion.div>
             )}
@@ -262,24 +266,24 @@ const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', 
             {!result && !error && !loading && (
                 <div className="h-64 flex flex-col items-center justify-center text-slate-400">
                     <FileJson size={48} className="mb-4 opacity-50" />
-                    <p>{idleLabel}</p>
+                    <p>{resolvedIdleLabel}</p>
                 </div>
             )}
 
             {loading && (
                 <div className={clsx('h-64 flex flex-col items-center justify-center', accentClass)}>
                     <Loader2 size={48} className="animate-spin mb-4" />
-                    <p className="text-slate-600 font-medium">{statusMessage || 'Yanıt bekleniyor...'}</p>
+                    <p className="text-slate-600 font-medium">{statusMessage || t('common.waitingResponse')}</p>
                 </div>
             )}
 
             {result && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm mb-4">
-                        <div className="font-semibold">Akış başarıyla tamamlandı</div>
+                        <div className="font-semibold">{t('common.flowSuccess')}</div>
                     </div>
 
-                    <h4 className="font-medium text-slate-700 text-sm">İşlenmemiş Yanıt:</h4>
+                    <h4 className="font-medium text-slate-700 text-sm">{t('common.rawResponse')}</h4>
                     <div className="relative">
                         <pre className="p-4 rounded-lg bg-slate-50 border border-slate-200 overflow-x-auto text-xs text-slate-600 font-mono">
                             {JSON.stringify(result, null, 2)}
@@ -292,6 +296,7 @@ const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', 
 };
 
 export const Home = () => {
+    const { t } = useI18n();
     const appContext = useAppContext();
     const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig } = appContext;
     const [selectedType, setSelectedType] = useState('kb');
@@ -313,16 +318,19 @@ export const Home = () => {
         vendor_db_name: ''
     });
 
+    const chatTypes = useMemo(() => buildChatTypes(t), [t]);
+    const workflowCards = useMemo(() => buildWorkflowCards(t), [t]);
+
     const initialMessages = useMemo(() => {
-        return CHAT_TYPES.reduce((acc, chat) => {
+        return chatTypes.reduce((acc, chat) => {
             acc[chat.id] = [{ text: chat.greeting, isBot: true }];
             return acc;
         }, {});
-    }, []);
+    }, [chatTypes]);
 
     const [messagesByType, setMessagesByType] = useState(initialMessages);
 
-    const activeChat = CHAT_TYPES.find((chat) => chat.id === selectedType);
+    const activeChat = chatTypes.find((chat) => chat.id === selectedType);
     const activeMessages = messagesByType[selectedType] || [];
 
     const connectionString = blobStorageConfig.connection_string?.trim();
@@ -339,7 +347,7 @@ export const Home = () => {
             return;
         }
         if (!isExcelFile(file)) {
-            setUploadError('Sadece Excel dosyaları yüklenebilir (.xls, .xlsx).');
+            setUploadError(t('common.uploadExcelOnly'));
             setSelectedFile(null);
             event.target.value = '';
             return;
@@ -360,11 +368,11 @@ export const Home = () => {
 
     const handleUpload = async () => {
         if (!selectedFile) {
-            setUploadError('Lütfen önce bir Excel dosyası seçin.');
+            setUploadError(t('common.selectExcelFile'));
             return;
         }
         if (!connectionString || !containerName) {
-            setUploadError('Blob Storage bağlantı dizesi ve container adını Yapılandırma Ayarları sayfasında tanımlayın.');
+            setUploadError(t('common.blobConfigMissing'));
             return;
         }
 
@@ -381,7 +389,7 @@ export const Home = () => {
             const blobUrl = await uploadToBlob(connectionString, containerName, resolvedBlobName, selectedFile);
             setUploadedBlobUrl(blobUrl);
         } catch (err) {
-            const message = err?.message || 'Dosya yüklenemedi. Lütfen bağlantı bilgilerini kontrol edin.';
+            const message = err?.message || t('common.uploadFailed');
             setUploadError(message);
         } finally {
             setUploading(false);
@@ -406,32 +414,32 @@ export const Home = () => {
 
     const validateKbFlow = useCallback(() => {
         if (uploading) {
-            return 'Dosya yükleme devam ediyor. Lütfen tamamlanmasını bekleyin.';
+            return t('home.errors.uploadInProgress');
         }
         if (!hasUploadedFile) {
-            return 'Lütfen önce Excel dosyasını yükleyin.';
+            return t('home.errors.uploadMissing');
         }
         if (!connectionString || !docIntelApiKey || !workspaceId) {
-            return 'Lütfen Yapılandırma Ayarları sayfasında Blob Storage bağlantı dizesi, Doc Intel API Key ve Workspace ID bilgilerini tamamlayın.';
+            return t('home.errors.kbConfigMissing');
         }
         return null;
-    }, [uploading, hasUploadedFile, connectionString, docIntelApiKey, workspaceId]);
+    }, [uploading, hasUploadedFile, connectionString, docIntelApiKey, workspaceId, t]);
 
     const validateDbFlow = useCallback(() => {
         if (uploading) {
-            return 'Dosya yükleme devam ediyor. Lütfen tamamlanmasını bekleyin.';
+            return t('home.errors.uploadInProgress');
         }
         if (!hasUploadedFile) {
-            return 'Lütfen önce Excel dosyasını yükleyin.';
+            return t('home.errors.uploadMissing');
         }
         if (!dbForm.vendor_db_name?.trim()) {
-            return 'Lütfen Vendor DB Name alanını doldurun.';
+            return t('home.errors.vendorDbNameMissing');
         }
         if (!connectionString || !workspaceId) {
-            return 'Lütfen Yapılandırma Ayarları sayfasında Blob Storage bağlantı dizesi ve Workspace ID bilgilerini tamamlayın.';
+            return t('home.errors.dbConfigMissing');
         }
         return null;
-    }, [uploading, hasUploadedFile, dbForm.vendor_db_name, connectionString, workspaceId]);
+    }, [uploading, hasUploadedFile, dbForm.vendor_db_name, connectionString, workspaceId, t]);
 
     const buildKbPayload = useCallback(() => {
         const resolvedBlobName = blobName?.trim() || selectedFile?.name || '';
@@ -554,7 +562,7 @@ export const Home = () => {
         } catch (err) {
             setMessagesByType((prev) => ({
                 ...prev,
-                [chat.id]: [...(prev[chat.id] || []), { text: `Hata: ${err.message}`, isBot: true }]
+                [chat.id]: [...(prev[chat.id] || []), { text: t('common.errorPrefix', { message: err.message }), isBot: true }]
             }));
         } finally {
             setLoadingType(null);
@@ -568,8 +576,8 @@ export const Home = () => {
                     <Sparkles size={28} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Anasayfa</h1>
-                    <p className="text-slate-500">Kaynak Dosya Yönetiminı veya sohbet tipini seçip hemen başlayın.</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('home.title')}</h1>
+                    <p className="text-slate-500">{t('home.subtitle')}</p>
                 </div>
             </div>
 
@@ -584,8 +592,8 @@ export const Home = () => {
                             <Upload size={18} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-slate-900">Kaynak Dosya Yönetimi</h2>
-                            <p className="text-sm text-slate-500">Excel dosyanızı tek sefer yükleyin, iki akışı ayrı ayrı çalıştırın.</p>
+                            <h2 className="text-lg font-semibold text-slate-900">{t('home.resourceTitle')}</h2>
+                            <p className="text-sm text-slate-500">{t('home.resourceSubtitle')}</p>
                         </div>
                     </div>
                     <ChevronDown
@@ -602,8 +610,8 @@ export const Home = () => {
                 >
                     <div className="overflow-hidden space-y-6">
                         <Card
-                            title="Dosya Yükleme"
-                            subtitle="Önce Excel dosyanızı aşağıdan yükleyin. Dosya yüklendikten sonra, formu doldurup akışı çalıştırabilirsiniz. Yüklenen dosyanın bağlantı bilgisi otomatik olarak formda kullanılacaktır."
+                            title={t('common.fileUpload')}
+                            subtitle={t('home.fileUploadSubtitle')}
                             className="h-fit"
                             bodyClassName="p-0"
                             onHeaderClick={() => toggleSection('upload')}
@@ -625,17 +633,17 @@ export const Home = () => {
                                 <div className="overflow-hidden">
                                     <div className="p-6 space-y-4">
                                         <Input
-                                            label="Excel Dosyası"
+                                            label={t('common.excelFile')}
                                             type="file"
                                             accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                             onChange={handleFileChange}
                                         />
                                         <Input
-                                            label="Blob Adı"
+                                            label={t('common.blobName')}
                                             name="blob_name"
                                             value={blobName}
                                             onChange={handleBlobNameChange}
-                                            placeholder="ornek.xlsx"
+                                            placeholder={t('common.exampleFileName')}
                                         />
                                         <Button
                                             type="button"
@@ -644,10 +652,10 @@ export const Home = () => {
                                             disabled={uploading || !selectedFile}
                                         >
                                             {uploading ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2" size={16} />}
-                                            {uploading ? 'Yükleniyor...' : 'Dosya Yükle'}
+                                            {uploading ? t('common.uploading') : t('common.uploadFile')}
                                         </Button>
                                         <p className="text-xs text-slate-500">
-                                            Bağlantı dizesi ve container adı Yapılandırma Ayarları sayfasından alınır.
+                                            {t('common.fileUploadHint')}
                                         </p>
                                         {uploadError && (
                                             <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
@@ -656,7 +664,7 @@ export const Home = () => {
                                         )}
                                         {uploadedBlobUrl && (
                                             <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 break-all">
-                                                Yükleme tamamlandı: {uploadedBlobUrl}
+                                                {t('common.uploadCompleted', { url: uploadedBlobUrl })}
                                             </div>
                                         )}
                                     </div>
@@ -665,7 +673,7 @@ export const Home = () => {
                         </Card>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {WORKFLOW_CARDS.map((flow) => {
+                            {workflowCards.map((flow) => {
                                 const isOpen = openFlows[flow.id];
                                 const Icon = flow.icon;
                                 return (
@@ -713,19 +721,19 @@ export const Home = () => {
                                 <div className="overflow-hidden">
                                     <div className="pt-6 border-t border-slate-200">
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                                            <Card title="Bilgi Bankası Yapılandırma" className="h-fit">
+                                            <Card title={t('home.kbConfigTitle')} className="h-fit">
                                                 <div className="space-y-6">
                                                     <div>
-                                                        <h4 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-3">Veri Hazırlama</h4>
+                                                        <h4 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-3">{t('common.dataPrep')}</h4>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            <Input label="Başlık Sütunu" name="title_column" value={kbForm.title_column} onChange={handleKbChange} />
-                                                            <Input label="URL Sütunu" name="url_column" value={kbForm.url_column} onChange={handleKbChange} />
+                                                            <Input label={t('common.titleColumn')} name="title_column" value={kbForm.title_column} onChange={handleKbChange} />
+                                                            <Input label={t('common.urlColumn')} name="url_column" value={kbForm.url_column} onChange={handleKbChange} />
                                                         </div>
                                                     </div>
 
                                                     <div>
-                                                        <h4 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-3">KB Oluşturucu</h4>
-                                                        <Input label="KB Adı" name="kb_name" value={kbForm.kb_name} onChange={handleKbChange} />
+                                                        <h4 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-3">{t('common.kbBuilder')}</h4>
+                                                        <Input label={t('common.kbName')} name="kb_name" value={kbForm.kb_name} onChange={handleKbChange} />
                                                     </div>
 
                                                     <Button
@@ -735,12 +743,12 @@ export const Home = () => {
                                                         disabled={kbFlow.loading || uploading}
                                                     >
                                                         {kbFlow.loading ? <Loader2 className="animate-spin mr-2" /> : <Play className="mr-2" />}
-                                                        {kbFlow.loading ? 'İşleniyor...' : 'Akışı Çalıştır'}
+                                                        {kbFlow.loading ? t('common.processing') : t('common.runFlow')}
                                                     </Button>
                                                 </div>
                                             </Card>
 
-                                            <Card title="Bilgi Bankası Durum ve Çıktı" className="min-h-[400px]">
+                                            <Card title={t('home.kbStatusTitle')} className="min-h-[400px]">
                                                 <FlowOutput
                                                     loading={kbFlow.loading}
                                                     error={kbFlow.error}
@@ -763,11 +771,11 @@ export const Home = () => {
                                 <div className="overflow-hidden">
                                     <div className="pt-6 border-t border-slate-200">
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                                            <Card title="Veritabanı Yapılandırma" className="h-fit">
+                                            <Card title={t('home.dbConfigTitle')} className="h-fit">
                                                 <div className="space-y-6">
                                                     <div>
-                                                        <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">Kayıt Yapılandırması</h4>
-                                                        <Input label="Vendor DB Name" name="vendor_db_name" value={dbForm.vendor_db_name} onChange={handleDbChange} />
+                                                        <h4 className="text-xs font-semibold text-cyan-600 uppercase tracking-wider mb-3">{t('common.registrationConfig')}</h4>
+                                                        <Input label={t('common.vendorDbName')} name="vendor_db_name" value={dbForm.vendor_db_name} onChange={handleDbChange} />
                                                     </div>
 
                                                     <Button
@@ -777,12 +785,12 @@ export const Home = () => {
                                                         disabled={dbFlow.loading || uploading}
                                                     >
                                                         {dbFlow.loading ? <Loader2 className="animate-spin mr-2" /> : <Play className="mr-2" />}
-                                                        {dbFlow.loading ? 'İşleniyor...' : 'Akışı Çalıştır'}
+                                                        {dbFlow.loading ? t('common.processing') : t('common.runFlow')}
                                                     </Button>
                                                 </div>
                                             </Card>
 
-                                            <Card title="Veritabanı Durum ve Çıktı" className="min-h-[400px]">
+                                            <Card title={t('home.dbStatusTitle')} className="min-h-[400px]">
                                                 <FlowOutput
                                                     loading={dbFlow.loading}
                                                     error={dbFlow.error}
@@ -806,13 +814,13 @@ export const Home = () => {
                         <MessageSquare size={18} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-semibold text-slate-900">Sohbetler</h2>
-                        <p className="text-sm text-slate-500">Üç sohbet tipinden birini seçin ve hemen başlayın.</p>
+                        <h2 className="text-lg font-semibold text-slate-900">{t('home.chatSectionTitle')}</h2>
+                        <p className="text-sm text-slate-500">{t('home.chatSectionSubtitle')}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {CHAT_TYPES.map((chat) => {
+                    {chatTypes.map((chat) => {
                         const isActive = chat.id === selectedType;
                         const Icon = chat.icon;
                         return (
@@ -858,7 +866,7 @@ export const Home = () => {
                                     <Sparkles size={16} className="animate-spin" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Yanıt hazırlanıyor...
+                                    {t('chat.responsePreparing')}
                                 </div>
                             </div>
                         )}

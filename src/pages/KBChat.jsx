@@ -3,10 +3,14 @@ import { MessageSquare, Sparkles } from 'lucide-react';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
+import { useI18n } from '../contexts/I18nContext';
 
 export const KBChat = () => {
     const { token, apiKey, kbChatConfig } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'Merhaba! Bugün Patent araştırmalarınızda nasıl yardımcı olabilirim?', isBot: true }]);
+    const { t } = useI18n();
+    const [messages, setMessages] = useState(() => ([
+        { text: t('home.chatTypes.kb.greeting'), isBot: true }
+    ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -16,7 +20,7 @@ export const KBChat = () => {
         // Basic validation for required IDs
         if (!kbChatConfig.knowledgebase_id || !kbChatConfig.lmapiid || !kbChatConfig.workspaceid) {
             setMessages(prev => [...prev, {
-                text: 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Knowledge Base ID, LM API ID ve Workspace ID değerlerini yapılandırın.',
+                text: t('chat.validation.kb'),
                 isBot: true
             }]);
             return;
@@ -44,7 +48,7 @@ export const KBChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.KB_CHAT, payload, token, apiKey);
 
-            let botText = "Sunucudan yanıt alındı.";
+            let botText = t('chat.serverReply');
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -57,7 +61,7 @@ export const KBChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: t('common.errorPrefix', { message: err.message }), isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -71,8 +75,8 @@ export const KBChat = () => {
                         <MessageSquare size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Patent Sohbeti</h1>
-                        <p className="text-slate-500">Patent Bilgi Bankanızla sohbet edin</p>
+                        <h1 className="text-2xl font-bold text-slate-900">{t('kbChat.title')}</h1>
+                        <p className="text-slate-500">{t('kbChat.subtitle')}</p>
                     </div>
                 </div>
 
@@ -87,7 +91,7 @@ export const KBChat = () => {
                                     <Sparkles size={16} className="animate-spin" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Düşünüyor...
+                                    {t('chat.thinking')}
                                 </div>
                             </div>
                         )}

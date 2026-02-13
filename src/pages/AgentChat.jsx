@@ -5,10 +5,14 @@ import { TextArea } from '../components/Input';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
+import { useI18n } from '../contexts/I18nContext';
 
 export const AgentChat = () => {
     const { token, apiKey } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'Ben Patent Araştırma ajanınızım. Nasıl yardımcı olabilirim?', isBot: true }]);
+    const { t } = useI18n();
+    const [messages, setMessages] = useState(() => ([
+        { text: t('home.chatTypes.agent.greeting'), isBot: true }
+    ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -43,7 +47,7 @@ export const AgentChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.AGENT_CHAT, payload, token, apiKey);
 
-            let botText = "Sunucudan yanıt alındı.";
+            let botText = t('chat.serverReply');
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -56,7 +60,7 @@ export const AgentChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: t('common.errorPrefix', { message: err.message }), isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -70,8 +74,8 @@ export const AgentChat = () => {
                         <Bot size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Ajan Sohbeti</h1>
-                        <p className="text-slate-500">Yapay Zeka Ajanınız sorunuza en uygun kaynaktan cevap versin</p>
+                        <h1 className="text-2xl font-bold text-slate-900">{t('agentChat.title')}</h1>
+                        <p className="text-slate-500">{t('agentChat.subtitle')}</p>
                     </div>
                 </div>
 
@@ -86,7 +90,7 @@ export const AgentChat = () => {
                                     <Sparkles size={16} className="animate-bounce" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Ajan işlem yapıyor...
+                                    {t('chat.agentWorking')}
                                 </div>
                             </div>
                         )}
@@ -104,23 +108,23 @@ export const AgentChat = () => {
             </div>
 
             <div className="w-80 shrink-0">
-                <Card title="Ajan Yapılandırması" className="h-full">
+                <Card title={t('agentChat.configTitle')} className="h-full">
                     <div className="space-y-4">
                         <TextArea
-                            label="Sistem İstemi"
+                            label={t('settings.labels.systemPrompt')}
                             name="system_prompt"
                             value={config.system_prompt}
                             onChange={handleConfigChange}
-                            placeholder="Sen yardımcı bir asistansın..."
+                            placeholder={t('agentChat.systemPromptPlaceholder')}
                             className="h-64"
                             rows={10}
                         />
                     </div>
 
                     <div className="mt-6 p-4 rounded-lg bg-pink-50 border border-pink-100">
-                        <h4 className="text-pink-700 text-xs font-bold uppercase mb-2">İstem Mühendisliği</h4>
+                        <h4 className="text-pink-700 text-xs font-bold uppercase mb-2">{t('agentChat.promptHintTitle')}</h4>
                         <p className="text-pink-600/80 text-xs leading-relaxed">
-                            Ajanın kişiliğini ve davranış kısıtlarını burada tanımlayın. Bu istem, her mesajın bağlamına eklenir.
+                            {t('agentChat.promptHintText')}
                         </p>
                     </div>
                 </Card>

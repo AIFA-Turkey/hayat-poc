@@ -3,6 +3,7 @@ import { MessageSquare, Database, Sparkles, Terminal, Info, ChevronRight, Chevro
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
+import { useI18n } from '../contexts/I18nContext';
 
 /**
  * T2D Specific Message Renderer
@@ -11,6 +12,7 @@ import { useAppContext } from '../contexts/AppContext';
 const T2DMessage = ({ text, isBot }) => {
     const [isRephrasedExpanded, setIsRephrasedExpanded] = useState(false);
     const [isSqlExpanded, setIsSqlExpanded] = useState(false);
+    const { t } = useI18n();
     const parsed = useMemo(() => {
         if (!isBot) return null;
 
@@ -45,7 +47,7 @@ const T2DMessage = ({ text, isBot }) => {
                         >
                             {isRephrasedExpanded ? <ChevronDown size={14} className="text-indigo-500 shrink-0" /> : <ChevronRight size={14} className="text-indigo-500 shrink-0" />}
                             <Info size={14} className="text-indigo-600 shrink-0" />
-                            <span className="text-[10px] uppercase font-bold text-indigo-500">Yeniden İfade Edilen Soru</span>
+                            <span className="text-[10px] uppercase font-bold text-indigo-500">{t('t2dChat.rephrasedLabel')}</span>
                         </button>
                         {isRephrasedExpanded && (
                             <div className="px-3 pb-3 pl-10 text-slate-700 italic">{parsed.rephrased}</div>
@@ -61,7 +63,7 @@ const T2DMessage = ({ text, isBot }) => {
                         >
                             {isSqlExpanded ? <ChevronDown size={12} className="text-emerald-400 shrink-0" /> : <ChevronRight size={12} className="text-emerald-400 shrink-0" />}
                             <Terminal size={12} className="text-emerald-400" />
-                            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Oluşturulan SQL</span>
+                            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{t('t2dChat.sqlLabel')}</span>
                         </button>
                         {isSqlExpanded && (
                             <pre className="p-3 text-xs text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">
@@ -83,7 +85,10 @@ const T2DMessage = ({ text, isBot }) => {
 
 export const T2DChat = () => {
     const { token, apiKey, t2dChatConfig } = useAppContext();
-    const [messages, setMessages] = useState([{ text: 'Merhaba! Patent Veritabanınızı sorgulamanıza yardımcı olabilirim. Ne öğrenmek istersiniz?', isBot: true }]);
+    const { t } = useI18n();
+    const [messages, setMessages] = useState(() => ([
+        { text: t('home.chatTypes.t2d.greeting'), isBot: true }
+    ]));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -93,7 +98,7 @@ export const T2DChat = () => {
         // Basic validation for required IDs
         if (!t2dChatConfig.db_vendor_account_id || !t2dChatConfig.lmapiid) {
             setMessages(prev => [...prev, {
-                text: 'Hata: Lütfen önce Yapılandırma Ayarları  sayfasında Vendor Account ID ve LM API ID değerlerini yapılandırın.',
+                text: t('chat.validation.t2d'),
                 isBot: true
             }]);
             return;
@@ -120,7 +125,7 @@ export const T2DChat = () => {
         try {
             const response = await runFlow(FLOW_IDS.T2D_CHAT, payload, token, apiKey);
 
-            let botText = "Sunucudan yanıt alındı.";
+            let botText = t('chat.serverReply');
             if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
                 botText = response.outputs[0].outputs[0].results.message.text;
             } else if (response?.outputs?.[0]?.results?.message?.text) {
@@ -133,7 +138,7 @@ export const T2DChat = () => {
 
             setMessages(prev => [...prev, { text: botText, isBot: true }]);
         } catch (err) {
-            setMessages(prev => [...prev, { text: `Hata: ${err.message}`, isBot: true }]);
+            setMessages(prev => [...prev, { text: t('common.errorPrefix', { message: err.message }), isBot: true }]);
         } finally {
             setLoading(false);
         }
@@ -147,8 +152,8 @@ export const T2DChat = () => {
                         <MessageSquare size={28} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">T2D Sohbeti</h1>
-                        <p className="text-slate-500">Metinden Veritabanına Sorgu Arayüzü</p>
+                        <h1 className="text-2xl font-bold text-slate-900">{t('t2dChat.title')}</h1>
+                        <p className="text-slate-500">{t('t2dChat.subtitle')}</p>
                     </div>
                 </div>
 
@@ -163,7 +168,7 @@ export const T2DChat = () => {
                                     <Database size={16} className="animate-pulse" />
                                 </div>
                                 <div className="p-4 rounded-2xl rounded-tl-none bg-slate-50 border border-slate-100 text-slate-500 text-sm">
-                                    Veritabanı sorgulanıyor...
+                                    {t('chat.dbQuerying')}
                                 </div>
                             </div>
                         )}
