@@ -8,7 +8,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
 
 export const AgentChat = () => {
-    const { token, apiKey } = useAppContext();
+    const { token, apiKey, agentChatConfig, setAgentChatConfig } = useAppContext();
     const { t } = useI18n();
     const [messages, setMessages] = useState(() => ([
         { text: t('home.chatTypes.agent.greeting'), isBot: true }
@@ -31,11 +31,20 @@ export const AgentChat = () => {
     }, [t]);
 
     const [config, setConfig] = useState({
-        system_prompt: ''
+        system_prompt: agentChatConfig.system_prompt || ''
     });
 
+    // Sync local state with global state when component mounts or global state changes
+    useEffect(() => {
+        setConfig(prev => ({ ...prev, system_prompt: agentChatConfig.system_prompt || '' }));
+    }, [agentChatConfig.system_prompt]);
+
     const handleConfigChange = (e) => {
-        setConfig({ ...config, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setConfig({ ...config, [name]: value });
+        if (name === 'system_prompt') {
+            setAgentChatConfig(prev => ({ ...prev, system_prompt: value }));
+        }
     };
 
     const handleSend = async () => {
