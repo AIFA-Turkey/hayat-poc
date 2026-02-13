@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MessageSquare, Database, Sparkles, Terminal, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
@@ -74,8 +76,10 @@ const T2DMessage = ({ text, isBot }) => {
                 )}
 
                 {parsed.result && (
-                    <div className="text-slate-800 whitespace-pre-wrap">
-                        {parsed.result}
+                    <div className="text-slate-800 prose prose-sm max-w-none prose-slate prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:text-slate-100">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {parsed.result}
+                        </ReactMarkdown>
                     </div>
                 )}
             </div>

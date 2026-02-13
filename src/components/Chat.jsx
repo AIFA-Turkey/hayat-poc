@@ -2,6 +2,8 @@ import { useRef, useEffect } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { Send, Bot, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useI18n } from '../contexts/I18nContext';
 
 export const ChatBubble = ({ message, isBot }) => {
@@ -27,7 +29,18 @@ export const ChatBubble = ({ message, isBot }) => {
                     ? 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
                     : 'bg-indigo-600 text-white rounded-tr-none'
             )}>
-                {message}
+                {typeof message === 'string' ? (
+                    <div className={clsx(
+                        "prose prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:text-slate-100",
+                        isBot ? "prose-slate" : "prose-invert"
+                    )}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message}
+                        </ReactMarkdown>
+                    </div>
+                ) : (
+                    message
+                )}
             </div>
         </motion.div>
     );
