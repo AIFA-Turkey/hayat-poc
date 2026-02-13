@@ -14,9 +14,17 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
     'x-api-key': apiKey ? `${apiKey.substring(0, 5)}...` : 'MISSING'
   });
 
-  // 20-minute timeout to match the Vite proxy timeout
+  // 30-minute timeout to match the Vite proxy timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1200000);
+  const timeoutId = setTimeout(() => controller.abort(), 1800000);
+  const startTime = Date.now();
+
+  const getElapsed = () => {
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    return mins > 0 ? `${mins}dk ${secs}sn` : `${secs}sn`;
+  };
 
   const options = {
     method: 'POST',
@@ -28,6 +36,7 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
   try {
     const response = await fetch(url, options);
     clearTimeout(timeoutId);
+    console.log(`API Response received in ${getElapsed()}`);
     if (!response.ok) {
       const errorText = await response.text();
       let errorData = {};
@@ -39,26 +48,28 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
       console.error('API Error Response:', {
         status: response.status,
         statusText: response.statusText,
+        elapsed: getElapsed(),
         data: errorData
       });
       
       // Extract the most descriptive error message
       const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || `HTTP hatası! durum: ${response.status}`;
-      throw new Error(message);
+      throw new Error(`${message} (${getElapsed()} sonra)`);
     }
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId);
+    const elapsed = getElapsed();
     if (error.name === 'AbortError') {
-      console.error('Request timed out after 20 minutes');
-      throw new Error('Zaman aşımı: API isteği 20 dakika sonra zaman aşımına uğradı. Lütfen tekrar deneyin.');
+      console.error(`Request aborted after ${elapsed}`);
+      throw new Error(`Zaman aşımı: API isteği ${elapsed} sonra zaman aşımına uğradı (AbortController). Lütfen tekrar deneyin.`);
     }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      console.error('Network Error / CORS Issue detected:', error);
-      throw new Error('Ağ Hatası: Cerebro API\'ye bağlanılamadı. Bu bir CORS sorunu veya ağ bağlantı problemi olabilir.');
+      console.error(`Network Error after ${elapsed}:`, error);
+      throw new Error(`Ağ Hatası: ${elapsed} sonra bağlantı kesildi. Bu Vite proxy zaman aşımı, CORS sorunu veya ağ bağlantı problemi olabilir.`);
     }
-    console.error('API Error:', error);
-    throw error;
+    console.error(`API Error after ${elapsed}:`, error);
+    throw new Error(`${error.message} (${elapsed} sonra)`);
   }
 };
 

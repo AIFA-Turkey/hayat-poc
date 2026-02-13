@@ -16,8 +16,8 @@ export default defineConfig({
         target: 'https://www.cerebroaifalabs.com',
         changeOrigin: true,
         secure: false,
-        timeout: 1200000, // 10 minutes
-        proxyTimeout: 1200000, // 10 minutes
+        timeout: 1800000, // 30 minutes
+        proxyTimeout: 1800000, // 30 minutes
       },
       '/blob-proxy': {
         target: 'https://cererpblobdev.blob.core.windows.net',
