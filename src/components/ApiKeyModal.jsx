@@ -1,23 +1,16 @@
-import { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
 import hayatLogo from '../assets/hayat-logo-zeminli.png';
 
 export const ApiKeyModal = () => {
-    const { apiKey, login } = useAppContext();
+    const { apiKeyConfirmed, confirmApiKey } = useAppContext();
     const { t } = useI18n();
-    const [inputValue, setInputValue] = useState('');
-    const [error, setError] = useState('');
 
-    if (apiKey) return null;
+    if (apiKeyConfirmed) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!inputValue.trim()) {
-            setError(t('apiKey.requiredError'));
-            return;
-        }
-        login(inputValue.trim());
+        confirmApiKey();
     };
 
     return (
@@ -34,32 +27,12 @@ export const ApiKeyModal = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="apiKey" className="block text-sm font-medium text-slate-700 mb-1">
-                                {t('apiKey.label')}
-                            </label>
-                            <input
-                                id="apiKey"
-                                type="password"
-                                value={inputValue}
-                                onChange={(e) => {
-                                    setInputValue(e.target.value);
-                                    if (error) setError('');
-                                }}
-                                placeholder={t('apiKey.placeholder')}
-                                className={`w-full px-4 py-3 bg-slate-50 border ${error ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none`}
-                            />
-                            {error && <p className="text-red-500 text-xs mt-1 font-medium">{error}</p>}
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
-                        >
-                            {t('apiKey.submit')}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
+                    >
+                        {t('apiKey.submit')}
+                    </button>
 
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">

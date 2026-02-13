@@ -1,4 +1,4 @@
-import { Settings, MessageSquare, Database, Bot, Cloud, FileSearch } from 'lucide-react';
+import { Settings, MessageSquare, Database, Bot, Cloud, FileSearch, Key } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Input, TextArea } from '../components/Input';
 import { useAppContext } from '../contexts/AppContext';
@@ -7,6 +7,8 @@ import { useI18n } from '../contexts/I18nContext';
 export const SettingsPage = () => {
     const { t } = useI18n();
     const {
+        apiKey,
+        updateApiKey,
         kbChatConfig,
         setKbChatConfig,
         t2dChatConfig,
@@ -37,6 +39,30 @@ export const SettingsPage = () => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <Card
+                    title={t('settings.cards.flowAi.title')}
+                    action={<Key size={18} className="text-amber-500" />}
+                    className="h-full"
+                >
+                    <div className="space-y-4">
+                        <Input
+                            label={t('settings.labels.flowAiApiKey')}
+                            name="flow_ai_api_key"
+                            value={apiKey || ''}
+                            onChange={(event) => updateApiKey(event.target.value)}
+                            type="password"
+                            className="mb-0"
+                        />
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-lg bg-amber-50 border border-amber-100">
+                        <h4 className="text-amber-700 text-xs font-bold uppercase mb-2">{t('settings.cards.flowAi.hintTitle')}</h4>
+                        <p className="text-amber-600/80 text-xs leading-relaxed">
+                            {t('settings.cards.flowAi.hintText')}
+                        </p>
+                    </div>
+                </Card>
+
                 <Card
                     title={t('settings.cards.kb.title')}
                     action={<MessageSquare size={18} className="text-indigo-500" />}

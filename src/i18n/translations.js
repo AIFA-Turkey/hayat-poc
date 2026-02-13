@@ -27,7 +27,7 @@ export const translations = {
     },
     apiKey: {
       welcomeTitle: "Patent GPT'ye Hoş Geldiniz!",
-      welcomeSubtitle: 'Devam etmek için FlowAI API Anahtarı giriniz.',
+      welcomeSubtitle: 'Devam etmek için hesabınızla giriş yapın.',
       label: 'FlowAI API Anahtarı',
       placeholder: 'sk-...',
       requiredError: 'API anahtarı gerekmektedir',
@@ -136,6 +136,11 @@ export const translations = {
       title: 'Yapılandırma Ayarları',
       subtitle: 'Sohbet deneyimlerini tek noktadan yönetin',
       cards: {
+        flowAi: {
+          title: 'FlowAI API Ayarları',
+          hintTitle: 'Varsayılan Anahtar',
+          hintText: '.env içindeki FlowAI API anahtarı varsayılan olarak kullanılır. Gerekirse buradan farklı bir anahtar tanımlayabilirsiniz.'
+        },
         kb: {
           title: 'Patent Sohbeti Ayarları',
           hintTitle: 'Bağlam Bilgisi',
@@ -163,6 +168,7 @@ export const translations = {
         }
       },
       labels: {
+        flowAiApiKey: 'FlowAI API Anahtarı',
         knowledgeBaseId: 'Knowledge Base ID',
         lmApiId: 'LM API ID',
         workspaceId: 'Workspace ID',
@@ -354,6 +360,11 @@ export const translations = {
       title: 'Configuration Settings',
       subtitle: 'Manage chat experiences from a single place',
       cards: {
+        flowAi: {
+          title: 'FlowAI API Settings',
+          hintTitle: 'Default Key',
+          hintText: 'The FlowAI API key from .env is used by default. Override it here when needed.'
+        },
         kb: {
           title: 'Patent Chat Settings',
           hintTitle: 'Context Info',
@@ -381,6 +392,7 @@ export const translations = {
         }
       },
       labels: {
+        flowAiApiKey: 'FlowAI API Key',
         knowledgeBaseId: 'Knowledge Base ID',
         lmApiId: 'LM API ID',
         workspaceId: 'Workspace ID',

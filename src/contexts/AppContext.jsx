@@ -6,8 +6,13 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const { t } = useI18n();
+  const envApiKey = import.meta.env.VITE_FLOW_AI_API_KEY || '';
+  const apiKeyConfirmedFlag = 'FLOW_AI_API_KEY_CONFIRMED';
   const [token, setToken] = useState(null);
-  const [apiKey, setApiKey] = useState(sessionStorage.getItem('FLOW_AI_API_KEY'));
+  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem('FLOW_AI_API_KEY') || envApiKey);
+  const [apiKeyConfirmed, setApiKeyConfirmed] = useState(() =>
+    Boolean(sessionStorage.getItem(apiKeyConfirmedFlag) || sessionStorage.getItem('FLOW_AI_API_KEY'))
+  );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [kbChatConfig, setKbChatConfig] = useState({
@@ -31,9 +36,26 @@ export const AppProvider = ({ children }) => {
     endpoint: import.meta.env.VITE_DOC_INTEL_ENDPOINT || ''
   });
 
-  const login = (key) => {
-    sessionStorage.setItem('FLOW_AI_API_KEY', key);
-    setApiKey(key);
+  const confirmApiKey = () => {
+    sessionStorage.setItem(apiKeyConfirmedFlag, 'true');
+    setApiKeyConfirmed(true);
+  };
+
+  const updateApiKey = (key) => {
+    const trimmed = (key || '').trim();
+    const nextKey = trimmed || envApiKey;
+    setApiKey(nextKey);
+    if (trimmed) {
+      sessionStorage.setItem('FLOW_AI_API_KEY', trimmed);
+    } else {
+      sessionStorage.removeItem('FLOW_AI_API_KEY');
+    }
+    if (nextKey) {
+      sessionStorage.setItem(apiKeyConfirmedFlag, 'true');
+    } else {
+      sessionStorage.removeItem(apiKeyConfirmedFlag);
+    }
+    setApiKeyConfirmed(Boolean(nextKey));
   };
 
   const initialized = useRef(false);
@@ -83,11 +105,16 @@ export const AppProvider = ({ children }) => {
 
   const resetApiKey = () => {
     sessionStorage.removeItem('FLOW_AI_API_KEY');
-    setApiKey(null);
+    sessionStorage.removeItem(apiKeyConfirmedFlag);
+    setApiKey(envApiKey);
+    setApiKeyConfirmed(false);
   };
 
   const logout = () => {
     sessionStorage.removeItem('FLOW_AI_API_KEY');
+    sessionStorage.removeItem(apiKeyConfirmedFlag);
+    setApiKey(envApiKey);
+    setApiKeyConfirmed(false);
     keycloak.logout();
   };
 
@@ -108,8 +135,10 @@ export const AppProvider = ({ children }) => {
       value={{
         token,
         apiKey,
+        apiKeyConfirmed,
         isAuthenticated,
-        login,
+        confirmApiKey,
+        updateApiKey,
         logout,
         resetApiKey,
         kbChatConfig,

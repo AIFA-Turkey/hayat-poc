@@ -1,11 +1,15 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiKeyModal } from './ApiKeyModal';
 import { AppProvider } from '../contexts/AppContext';
 import { I18nProvider } from '../contexts/I18nContext';
 import { translations } from '../i18n/translations';
 
 describe('ApiKeyModal', () => {
+    beforeEach(() => {
+        sessionStorage.clear();
+    });
+
     it('renders when no API key is present', () => {
         render(
             <I18nProvider>
@@ -15,10 +19,10 @@ describe('ApiKeyModal', () => {
             </I18nProvider>
         );
         expect(screen.getByText(translations.tr.apiKey.welcomeTitle)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(translations.tr.apiKey.placeholder)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: translations.tr.apiKey.submit })).toBeInTheDocument();
     });
 
-    it('validates empty input', () => {
+    it('continues after confirmation', async () => {
         render(
             <I18nProvider>
                 <AppProvider>
@@ -30,28 +34,8 @@ describe('ApiKeyModal', () => {
         const button = screen.getByRole('button', { name: translations.tr.apiKey.submit });
         fireEvent.click(button);
 
-        expect(screen.getByText(translations.tr.apiKey.requiredError)).toBeInTheDocument();
-    });
-
-    it('submits key and disappears', async () => {
-        render(
-            <I18nProvider>
-                <AppProvider>
-                    <ApiKeyModal />
-                </AppProvider>
-            </I18nProvider>
-        );
-
-        const input = screen.getByPlaceholderText(translations.tr.apiKey.placeholder);
-        const button = screen.getByRole('button', { name: translations.tr.apiKey.submit });
-
-        fireEvent.change(input, { target: { value: 'test-api-key' } });
-        fireEvent.click(button);
-
-        // In a real app, we'd mock the context or check if the modal is gone.
-        // Since AppProvider updates state unmounts the modal if it returns null when authenticated.
-        // But checking for disappearance might require waitFor if there were animations/async state updates.
-        // Here we can check if the key was set in sessionStorage
-        expect(sessionStorage.getItem('FLOW_AI_API_KEY')).toBe('test-api-key');
+        await waitFor(() => {
+            expect(screen.queryByText(translations.tr.apiKey.welcomeTitle)).not.toBeInTheDocument();
+        });
     });
 });
