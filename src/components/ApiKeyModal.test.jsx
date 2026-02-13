@@ -22,7 +22,7 @@ describe('ApiKeyModal', () => {
         expect(screen.getByRole('button', { name: translations.tr.apiKey.submit })).toBeInTheDocument();
     });
 
-    it('continues after confirmation', async () => {
+    it('stays visible until authenticated', async () => {
         render(
             <I18nProvider>
                 <AppProvider>
@@ -35,7 +35,7 @@ describe('ApiKeyModal', () => {
         fireEvent.click(button);
 
         await waitFor(() => {
-            expect(screen.queryByText(translations.tr.apiKey.welcomeTitle)).not.toBeInTheDocument();
+            expect(screen.getByText(translations.tr.apiKey.welcomeTitle)).toBeInTheDocument();
         });
     });
 });

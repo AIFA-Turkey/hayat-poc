@@ -64,44 +64,61 @@ export const AppProvider = ({ children }) => {
     if (initialized.current) return;
     initialized.current = true;
 
+    let refreshInterval;
+
     const initOptions = {
-      onLoad: 'login-required',
+      onLoad: 'check-sso',
       pkceMethod: 'S256',
       checkLoginIframe: false,
       redirectUri: window.location.origin + '/flowai',
       silentCheckSsoRedirectUri: `${window.location.origin}/flowai/silent-check-sso.html`,
     };
 
-    keycloak.init(initOptions).then(authenticated => {
-      console.log('Keycloak Auth Result:', authenticated);
-      if (authenticated) {
-        console.log('Token acquired:', !!keycloak.token);
-        setToken(keycloak.token);
-        setIsAuthenticated(true);
+    keycloak
+      .init(initOptions)
+      .then((authenticated) => {
+        console.log('Keycloak Auth Result:', authenticated);
+        if (authenticated) {
+          console.log('Token acquired:', !!keycloak.token);
+          setToken(keycloak.token);
+          setIsAuthenticated(true);
 
-        // Setup token refresh
-        const interval = setInterval(() => {
-          keycloak.updateToken(70).then(refreshed => {
-            if (refreshed) {
-              setToken(keycloak.token);
-            }
-          }).catch(err => {
-            console.error('Failed to refresh token', err);
-            keycloak.login();
-          });
-        }, 60000);
-
+          // Setup token refresh
+          refreshInterval = setInterval(() => {
+            keycloak
+              .updateToken(70)
+              .then((refreshed) => {
+                if (refreshed) {
+                  setToken(keycloak.token);
+                }
+              })
+              .catch((err) => {
+                console.error('Failed to refresh token', err);
+                keycloak.login();
+              });
+          }, 60000);
+        } else {
+          setToken(null);
+          setIsAuthenticated(false);
+        }
         setLoading(false);
-        return () => {
-          clearInterval(interval);
-        };
-      } else {
-        keycloak.login();
+      })
+      .catch((err) => {
+        console.error('Keycloak Init Error:', err);
+        setLoading(false);
+      });
+
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
       }
-    }).catch(err => {
-      console.error('Keycloak Init Error:', err);
-    });
+    };
   }, []);
+
+  const login = () => {
+    if (import.meta.env.MODE === 'test') return;
+    keycloak.login();
+  };
 
   const resetApiKey = () => {
     sessionStorage.removeItem('FLOW_AI_API_KEY');
@@ -138,6 +155,7 @@ export const AppProvider = ({ children }) => {
         apiKeyConfirmed,
         isAuthenticated,
         confirmApiKey,
+        login,
         updateApiKey,
         logout,
         resetApiKey,

@@ -3,14 +3,17 @@ import { useI18n } from '../contexts/I18nContext';
 import hayatLogo from '../assets/hayat-logo-zeminli.png';
 
 export const ApiKeyModal = () => {
-    const { apiKeyConfirmed, confirmApiKey } = useAppContext();
+    const { apiKeyConfirmed, confirmApiKey, login, isAuthenticated } = useAppContext();
     const { t } = useI18n();
 
-    if (apiKeyConfirmed) return null;
+    if (apiKeyConfirmed && isAuthenticated) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
         confirmApiKey();
+        if (!isAuthenticated) {
+            login();
+        }
     };
 
     return (

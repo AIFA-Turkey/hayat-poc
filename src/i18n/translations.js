@@ -32,7 +32,7 @@ export const translations = {
       placeholder: 'sk-...',
       requiredError: 'API anahtarı gerekmektedir',
       submit: 'Panele Giriş',
-      tagline: 'Kurumsal Yapay Zeka Çözümleri'
+      tagline: 'AiFA Labs Kurumsal Yapay Zeka Çözümleri'
     },
     chat: {
       placeholder: 'Bir mesaj yazın...',
@@ -87,7 +87,7 @@ export const translations = {
     },
     home: {
       title: 'Anasayfa',
-      subtitle: 'Kaynak Dosya Yönetiminı veya sohbet tipini seçip hemen başlayın.',
+      subtitle: 'Yeni Kaynak Dosya yükleyin veya Sohbet Tipini seçip hemen başlayın.',
       resourceTitle: 'Kaynak Dosya Yönetimi',
       resourceSubtitle: 'Excel dosyanızı tek sefer yükleyin, iki akışı ayrı ayrı çalıştırın.',
       fileUploadSubtitle: 'Önce Excel dosyanızı aşağıdan yükleyin. Dosya yüklendikten sonra, formu doldurup akışı çalıştırabilirsiniz. Yüklenen dosyanın bağlantı bilgisi otomatik olarak formda kullanılacaktır.',
