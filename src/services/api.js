@@ -165,12 +165,12 @@ export const getFlowRunStatus = async (handle, token, apiKey, timeoutMs = 15000)
 
 export const runFlow = async (flowId, payload, token, apiKey) => {
   const url = `/api/flowai/api/v1/run/${flowId}`;
-  
+
   const headers = buildHeaders(token, apiKey);
 
   console.log(`API Request: ${url}`);
-  console.log('Headers:', { 
-    ...headers, 
+  console.log('Headers:', {
+    ...headers,
     Authorization: token ? `Bearer ${token.substring(0, 10)}...` : 'MISSING',
     'x-api-key': apiKey ? `${apiKey.substring(0, 5)}...` : 'MISSING'
   });
@@ -212,7 +212,7 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
         elapsed: getElapsed(),
         data: errorData
       });
-      
+
       // Extract the most descriptive error message
       const message = errorData.detail || errorData.message || errorData.error || (typeof errorData === 'string' ? errorData : null) || tStatic('api.httpError', { status: response.status });
       throw new Error(tStatic('api.errorAfter', { message, elapsed: getElapsed() }));
@@ -235,12 +235,18 @@ export const runFlow = async (flowId, payload, token, apiKey) => {
 };
 
 export const FLOW_IDS = {
-  EXCEL_2_KB: 'e40c2ee1-5bb9-466f-bd4e-a9101de0c6da',
-  EXCEL_2_DB: 'c8089a7b-ac22-433e-a62d-12723d9c6f32',
-  KB_CHAT: '116b85d2-f5d8-4763-8ca6-468ba00c0b50',
-  // KB_CHAT: '050687b3-ae88-48e7-bd2f-bad8f4779a1d',
-  T2D_CHAT: '048d19cb-0a77-46aa-a8dc-f6b2a0c2b283',
-  // T2D_CHAT: '975daa0f-8f0a-430d-ae22-2aa2b759845d',
-  AGENT_CHAT: '766322bd-a49a-4168-a6f7-a8231fc2ba3f',
-  // AGENT_CHAT: '80b75a74-9596-4fa0-8611-fae6ec328f27',
+  // EXCEL_2_KB: 'e40c2ee1-5bb9-466f-bd4e-a9101de0c6da',
+  EXCEL_2_KB: import.meta.env.VITE_FLOW_ID_EXCEL_2_KB,
+
+  // EXCEL_2_DB: 'c8089a7b-ac22-433e-a62d-12723d9c6f32',
+  EXCEL_2_DB: import.meta.env.VITE_FLOW_ID_EXCEL_2_DB,
+
+  // KB_CHAT: '116b85d2-f5d8-4763-8ca6-468ba00c0b50',
+  KB_CHAT: import.meta.env.VITE_FLOW_ID_KB_CHAT,
+
+  // T2D_CHAT: '048d19cb-0a77-46aa-a8dc-f6b2a0c2b283',
+  T2D_CHAT: import.meta.env.VITE_FLOW_ID_T2D_CHAT,
+
+  // AGENT_CHAT: '766322bd-a49a-4168-a6f7-a8231fc2ba3f',
+  AGENT_CHAT: import.meta.env.VITE_FLOW_ID_AGENT_CHAT,
 };
