@@ -12,6 +12,7 @@ export default {
       },
       fontFamily: {
         sans: ['var(--font-body)', 'sans-serif'],
+        modern: ['var(--font-modern)', 'sans-serif'],
       },
     },
   },

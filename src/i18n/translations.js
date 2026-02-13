@@ -32,7 +32,9 @@ export const translations = {
       placeholder: 'sk-...',
       requiredError: 'API anahtarı gerekmektedir',
       submit: 'Panele Giriş',
-      tagline: 'AiFA Labs Kurumsal Yapay Zeka Çözümleri'
+      tagline: 'Kurumsal Yapay Zeka Çözümleri',
+      taglineBrand: 'AIFA Labs',
+      taglineDescriptor: 'Kurumsal Yapay Zeka Çözümleri'
     },
     chat: {
       placeholder: 'Bir mesaj yazın...',
@@ -256,7 +258,9 @@ export const translations = {
       placeholder: 'sk-...',
       requiredError: 'API key is required',
       submit: 'Sign In',
-      tagline: 'Enterprise AI Solutions'
+      tagline: 'Enterprise AI Solutions',
+      taglineBrand: 'AIFA Labs',
+      taglineDescriptor: 'Enterprise AI Solutions'
     },
     chat: {
       placeholder: 'Type a message...',

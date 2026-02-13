@@ -1,6 +1,7 @@
 import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
 import hayatLogo from '../assets/hayat-logo-zeminli.png';
+import aifaIcon from '../assets/Aifa Turkey Color.png';
 
 export const ApiKeyModal = () => {
     const { apiKeyConfirmed, confirmApiKey, login, isAuthenticated } = useAppContext();
@@ -38,9 +39,14 @@ export const ApiKeyModal = () => {
                     </button>
 
                     <div className="mt-8 pt-6 border-t border-slate-100">
-                        <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">
-                            {t('apiKey.tagline')}
-                        </p>
+                        <div className="flex items-center justify-center gap-3 text-sm text-slate-500 font-semibold">
+                            <img
+                                src={aifaIcon}
+                                alt="AIFA Labs icon"
+                                className="h-10 w-25 object-contain"
+                            />
+                            <span className="text-base font-modern">{t('apiKey.taglineDescriptor')}</span>
+                        </div>
                     </div>
                 </form>
             </div>
