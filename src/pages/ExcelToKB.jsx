@@ -149,26 +149,26 @@ export const ExcelToKB = () => {
             input_type: "text",
             sessionid: "user_1",
             tweaks: {
-                "PatentDataPrepComponent-LIu3z": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID || "PatentDataPrepComponent-LIu3z"]: {
                     "title_column": formData.title_column,
                     "url_column": formData.url_column
                 },
-                "AzureDocIntel-pdrEa": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID || "AzureDocIntel-pdrEa"]: {
                     "api_key": docIntelApiKey,
                     "endpoint": docIntelEndpoint
                 },
-                "AzureBlobUploadComponent-QHW8r": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID || "AzureBlobUploadComponent-QHW8r"]: {
                     "blob_name": formData.blob_name,
                     "connection_string": connectionString
                 },
-                "CerebroKBBuilderComponent-fV4VM": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID || "CerebroKBBuilderComponent-fV4VM"]: {
                     "knowledgebase_name": formData.kb_name,
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                "CerebroComponentFetcherComponent-i1UfK": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_FETCHER_ID || "CerebroComponentFetcherComponent-i1UfK"]: {
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                "AzureBlobDownloadComponent-x5HdI": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID || "AzureBlobDownloadComponent-x5HdI"]: {
                     "blob_url": resolvedBlobUrl,
                     "connection_string": connectionString
                 }
