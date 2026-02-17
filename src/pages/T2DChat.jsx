@@ -133,7 +133,7 @@ export const T2DChat = () => {
             input_type: "chat",
             sessionid: sessionId,
             tweaks: {
-                [import.meta.env.VITE_TWEAK_T2D_CHAT_ID || "CerebroT2DChatComponent-10UsX"]: {
+                [import.meta.env.VITE_TWEAK_T2D_CHAT_ID]: {
                     "db_vendor_account_id": t2dChatConfig.db_vendor_account_id,
                     "lmapiid": t2dChatConfig.lmapiid
                 }

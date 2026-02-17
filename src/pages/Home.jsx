@@ -19,7 +19,7 @@ const buildChatTypes = (t) => ([
         icon: MessageSquare,
         tone: 'indigo',
         flowId: FLOW_IDS.KB_CHAT,
-        tweakKey: import.meta.env.VITE_TWEAK_KB_CHAT_ID || 'CerebroKBChatComponent-uMCSg',
+        tweakKey: import.meta.env.VITE_TWEAK_KB_CHAT_ID,
         getConfig: (ctx) => ({
             knowledgebase_id: ctx.kbChatConfig.knowledgebase_id,
             lmapiid: ctx.kbChatConfig.lmapiid,
@@ -40,7 +40,7 @@ const buildChatTypes = (t) => ([
         icon: Database,
         tone: 'cyan',
         flowId: FLOW_IDS.T2D_CHAT,
-        tweakKey: import.meta.env.VITE_TWEAK_T2D_CHAT_ID || 'CerebroT2DChatComponent-10UsX',
+        tweakKey: import.meta.env.VITE_TWEAK_T2D_CHAT_ID,
         getConfig: (ctx) => ({
             db_vendor_account_id: ctx.t2dChatConfig.db_vendor_account_id,
             lmapiid: ctx.t2dChatConfig.lmapiid
@@ -60,7 +60,7 @@ const buildChatTypes = (t) => ([
         icon: Bot,
         tone: 'pink',
         flowId: FLOW_IDS.AGENT_CHAT,
-        tweakKey: import.meta.env.VITE_TWEAK_AGENT_CHAT_ID || 'Agent-enbXU',
+        tweakKey: import.meta.env.VITE_TWEAK_AGENT_CHAT_ID,
         getConfig: (ctx) => ({
             system_prompt: ctx.agentChatConfig.system_prompt
         }),
@@ -473,26 +473,26 @@ export const Home = () => {
             input_type: 'text',
             sessionid: sessionId,
             tweaks: {
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID || 'PatentDataPrepComponent-LIu3z']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID]: {
                     title_column: kbForm.title_column,
                     url_column: kbForm.url_column
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID || 'AzureDocIntel-pdrEa']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID]: {
                     api_key: docIntelApiKey,
                     endpoint: docIntelEndpoint
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID || 'AzureBlobUploadComponent-QHW8r']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID]: {
                     blob_name: resolvedBlobName,
                     connection_string: connectionString
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID || 'CerebroKBBuilderComponent-fV4VM']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID]: {
                     knowledgebase_name: kbForm.kb_name,
                     workspace_id: workspaceId
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_FETCHER_ID || 'CerebroComponentFetcherComponent-i1UfK']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_FETCHER_ID]: {
                     workspace_id: workspaceId
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID || 'AzureBlobDownloadComponent-x5HdI']: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID]: {
                     blob_url: uploadedBlobUrl,
                     connection_string: connectionString
                 }
@@ -517,11 +517,11 @@ export const Home = () => {
         input_type: 'text',
         sessionid: sessionId,
         tweaks: {
-            [import.meta.env.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID || 'CerebroConverseRegistrarComponent-tL6ob']: {
+            [import.meta.env.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID]: {
                 vendor_db_name: dbForm.vendor_db_name,
                 workspace_id: workspaceId
             },
-            [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID || 'AzureBlobDownloadComponent-HVqgf']: {
+            [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID]: {
                 blob_url: uploadedBlobUrl,
                 connection_string: connectionString
             }

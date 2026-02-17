@@ -145,11 +145,11 @@ export const ExcelToDB = () => {
             input_type: "text",
             sessionid: sessionId,
             tweaks: {
-                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID || "CerebroConverseRegistrarComponent-tL6ob"]: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID]: {
                     "vendor_db_name": formData.vendor_db_name,
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID || "AzureBlobDownloadComponent-HVqgf"]: {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID]: {
                     "blob_url": resolvedBlobUrl,
                     "connection_string": connectionString
                 }

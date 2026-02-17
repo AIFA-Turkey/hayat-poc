@@ -30,7 +30,7 @@ const fetchWithTimeout = async (url, options, timeoutMs) => {
 };
 
 const START_URL_TEMPLATE = import.meta.env.VITE_FLOW_START_URL_TEMPLATE;
-const START_QUERY = import.meta.env.VITE_FLOW_START_QUERY ?? 'async=true';
+const START_QUERY = import.meta.env.VITE_FLOW_START_QUERY;
 const STATUS_URL_TEMPLATE = import.meta.env.VITE_FLOW_STATUS_URL_TEMPLATE;
 
 const normalizeProxyUrl = (url) => {

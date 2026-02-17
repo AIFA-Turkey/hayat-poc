@@ -61,7 +61,7 @@ export const AgentChat = () => {
             input_type: "chat",
             sessionid: sessionId,
             tweaks: {
-                [import.meta.env.VITE_TWEAK_AGENT_CHAT_ID || "Agent-enbXU"]: {
+                [import.meta.env.VITE_TWEAK_AGENT_CHAT_ID]: {
                     "system_prompt": config.system_prompt
                 }
             }

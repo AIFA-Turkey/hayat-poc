@@ -51,7 +51,7 @@ export const KBChat = () => {
             input_type: "chat",
             sessionid: sessionId,
             tweaks: {
-                [import.meta.env.VITE_TWEAK_KB_CHAT_ID || "CerebroKBChatComponent-uMCSg"]: {
+                [import.meta.env.VITE_TWEAK_KB_CHAT_ID]: {
                     "knowledgebase_id": kbChatConfig.knowledgebase_id,
                     "lmapiid": kbChatConfig.lmapiid,
                     "workspaceid": kbChatConfig.workspaceid
