@@ -8,7 +8,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
 
 export const AgentChat = () => {
-    const { token, apiKey, agentChatConfig, setAgentChatConfig } = useAppContext();
+    const { token, apiKey, agentChatConfig, setAgentChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [messages, setMessages] = useState(() => ([
         { text: t('home.chatTypes.agent.greeting'), isBot: true }
@@ -59,7 +59,7 @@ export const AgentChat = () => {
             input_value: userMessage,
             output_type: "chat",
             input_type: "chat",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
                 [import.meta.env.VITE_TWEAK_AGENT_CHAT_ID || "Agent-enbXU"]: {
                     "system_prompt": config.system_prompt

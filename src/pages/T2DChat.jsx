@@ -88,7 +88,7 @@ const T2DMessage = ({ text, isBot }) => {
 };
 
 export const T2DChat = () => {
-    const { token, apiKey, t2dChatConfig } = useAppContext();
+    const { token, apiKey, t2dChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [messages, setMessages] = useState(() => ([
         { text: t('home.chatTypes.t2d.greeting'), isBot: true }
@@ -131,7 +131,7 @@ export const T2DChat = () => {
             input_value: userMessage,
             output_type: "chat",
             input_type: "chat",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
                 [import.meta.env.VITE_TWEAK_T2D_CHAT_ID || "CerebroT2DChatComponent-10UsX"]: {
                     "db_vendor_account_id": t2dChatConfig.db_vendor_account_id,

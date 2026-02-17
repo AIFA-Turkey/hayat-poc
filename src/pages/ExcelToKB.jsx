@@ -25,7 +25,7 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToKB = () => {
-    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig } = useAppContext();
+    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -147,7 +147,7 @@ export const ExcelToKB = () => {
             input_value: "hello world!",
             output_type: "text",
             input_type: "text",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
                 [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID || "PatentDataPrepComponent-LIu3z"]: {
                     "title_column": formData.title_column,

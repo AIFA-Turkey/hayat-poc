@@ -6,7 +6,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
 
 export const KBChat = () => {
-    const { token, apiKey, kbChatConfig } = useAppContext();
+    const { token, apiKey, kbChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [messages, setMessages] = useState(() => ([
         { text: t('home.chatTypes.kb.greeting'), isBot: true }
@@ -49,7 +49,7 @@ export const KBChat = () => {
             input_value: userMessage,
             output_type: "chat",
             input_type: "chat",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
                 [import.meta.env.VITE_TWEAK_KB_CHAT_ID || "CerebroKBChatComponent-uMCSg"]: {
                     "knowledgebase_id": kbChatConfig.knowledgebase_id,
