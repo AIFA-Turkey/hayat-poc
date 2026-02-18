@@ -23,52 +23,10 @@ jobs:
         with:
           node-version: "24.x"
 
-      - name: npm install, build, and test
+      - name: npm install and test
         run: |
           npm install
-          npm run build --if-present
           npm run test --if-present
-        env:
-          # Azure Blob Storage
-          VITE_BLOB_CONNECTION_STRING: ${{ secrets.VITE_BLOB_CONNECTION_STRING }}
-          VITE_BLOB_CONTAINER_NAME: ${{ secrets.VITE_BLOB_CONTAINER_NAME }}
-          # Azure Document Intelligence
-          VITE_DOC_INTEL_API_KEY: ${{ secrets.VITE_DOC_INTEL_API_KEY }}
-          VITE_DOC_INTEL_ENDPOINT: ${{ secrets.VITE_DOC_INTEL_ENDPOINT }}
-          # Flow AI
-          VITE_FLOW_AI_API_KEY: ${{ secrets.VITE_FLOW_AI_API_KEY }}
-          VITE_FLOW_START_URL_TEMPLATE: ${{ secrets.VITE_FLOW_START_URL_TEMPLATE }}
-          VITE_FLOW_START_QUERY: ${{ secrets.VITE_FLOW_START_QUERY }}
-          VITE_FLOW_STATUS_URL_TEMPLATE: ${{ secrets.VITE_FLOW_STATUS_URL_TEMPLATE }}
-          # KB Chat
-          VITE_FLOW_ID_KB_CHAT: ${{ secrets.VITE_FLOW_ID_KB_CHAT }}
-          VITE_TWEAK_KB_CHAT_ID: ${{ secrets.VITE_TWEAK_KB_CHAT_ID }}
-          VITE_KB_KNOWLEDGEBASE_ID: ${{ secrets.VITE_KB_KNOWLEDGEBASE_ID }}
-          VITE_KB_LMAPIID: ${{ secrets.VITE_KB_LMAPIID }}
-          VITE_KB_WORKSPACEID: ${{ secrets.VITE_KB_WORKSPACEID }}
-          # T2D Chat
-          VITE_FLOW_ID_T2D_CHAT: ${{ secrets.VITE_FLOW_ID_T2D_CHAT }}
-          VITE_TWEAK_T2D_CHAT_ID: ${{ secrets.VITE_TWEAK_T2D_CHAT_ID }}
-          VITE_T2D_VENDOR_ACCOUNT_ID: ${{ secrets.VITE_T2D_VENDOR_ACCOUNT_ID }}
-          VITE_T2D_LMAPIID: ${{ secrets.VITE_T2D_LMAPIID }}
-          # Agent Chat
-          VITE_FLOW_ID_AGENT_CHAT: ${{ secrets.VITE_FLOW_ID_AGENT_CHAT }}
-          VITE_TWEAK_AGENT_CHAT_ID: ${{ secrets.VITE_TWEAK_AGENT_CHAT_ID }}
-          VITE_AGENT_SYSTEM_PROMPT: ${{ secrets.VITE_AGENT_SYSTEM_PROMPT }}
-          # Excel to DB
-          VITE_FLOW_ID_EXCEL_2_DB: ${{ secrets.VITE_FLOW_ID_EXCEL_2_DB }}
-          VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID }}
-          VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID }}
-          # Excel to KB
-          VITE_FLOW_ID_EXCEL_2_KB: ${{ secrets.VITE_FLOW_ID_EXCEL_2_KB }}
-          VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID }}
-          VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID }}
-          VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID }}
-          VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID }}
-          VITE_TWEAK_EXCEL_2_KB_FETCHER_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_FETCHER_ID }}
-          VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID: ${{ secrets.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID }}
-          # Port
-          VITE_PORT: ${{ secrets.VITE_PORT }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
