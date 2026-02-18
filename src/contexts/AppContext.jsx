@@ -25,7 +25,7 @@ export const AppProvider = ({ children }) => {
     lmapiid: import.meta.env.VITE_T2D_LMAPIID || ''
   });
   const [agentChatConfig, setAgentChatConfig] = useState({
-    system_prompt: ''
+    system_prompt: (import.meta.env.VITE_AGENT_SYSTEM_PROMPT || '').replace(/\\n/g, '\n')
   });
   const [blobStorageConfig, setBlobStorageConfig] = useState({
     connection_string: import.meta.env.VITE_BLOB_CONNECTION_STRING || '',
