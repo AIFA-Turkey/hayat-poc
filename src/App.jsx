@@ -35,7 +35,7 @@ function AppContent() {
 function App() {
   return (
     <AppProvider>
-      <BrowserRouter basename="/flowai">
+      <BrowserRouter basename="/">
         <AppContent />
       </BrowserRouter>
     </AppProvider>

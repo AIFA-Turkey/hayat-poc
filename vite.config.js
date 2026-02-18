@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const port = parseInt(env.VITE_PORT) || 80
 
   return {
-    base: '/flowai',
+    base: '/',
     define: {
       global: 'globalThis',
     },
@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       port: port,
       strictPort: true,
       proxy: {
-        '/api/flowai': {
+        '/api': {
           target: 'https://www.cerebroaifalabs.com',
           changeOrigin: true,
           secure: false,

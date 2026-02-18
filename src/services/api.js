@@ -35,9 +35,6 @@ const STATUS_URL_TEMPLATE = import.meta.env.VITE_FLOW_STATUS_URL_TEMPLATE;
 
 const normalizeProxyUrl = (url) => {
   if (!url || typeof url !== 'string') return url;
-  if (url.startsWith('/api/') && !url.startsWith('/api/flowai')) {
-    return `/api/flowai${url}`;
-  }
   return url;
 };
 
@@ -46,7 +43,7 @@ const resolveStartUrl = (flowId) => {
     ? (START_URL_TEMPLATE.includes('{flowId}')
       ? START_URL_TEMPLATE.replace('{flowId}', flowId)
       : `${START_URL_TEMPLATE.replace(/\/$/, '')}/${flowId}`)
-    : `/api/flowai/api/v1/run/${flowId}`;
+    : `/api/v1/run/${flowId}`;
 
   if (START_QUERY) {
     const joiner = url.includes('?') ? '&' : '?';
@@ -91,9 +88,9 @@ const resolveStatusUrl = (handle) => {
     }
   }
 
-  if (handle.taskId) return `/api/flowai/api/v1/task/${handle.taskId}`;
-  if (handle.runId) return `/api/flowai/api/v1/run/${handle.runId}`;
-  if (handle.jobId) return `/api/flowai/api/v1/build/${handle.jobId}/events`;
+  if (handle.taskId) return `/api/v1/task/${handle.taskId}`;
+  if (handle.runId) return `/api/v1/run/${handle.runId}`;
+  if (handle.jobId) return `/api/v1/build/${handle.jobId}/events`;
   return null;
 };
 
@@ -164,7 +161,7 @@ export const getFlowRunStatus = async (handle, token, apiKey, timeoutMs = 15000)
 };
 
 export const runFlow = async (flowId, payload, token, apiKey) => {
-  const url = `/api/flowai/api/v1/run/${flowId}`;
+  const url = `/api/v1/run/${flowId}`;
 
   const headers = buildHeaders(token, apiKey);
 

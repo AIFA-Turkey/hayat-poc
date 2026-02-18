@@ -72,8 +72,8 @@ export const AppProvider = ({ children }) => {
       onLoad: 'check-sso',
       pkceMethod: 'S256',
       checkLoginIframe: false,
-      redirectUri: window.location.origin + '/flowai',
-      silentCheckSsoRedirectUri: `${window.location.origin}/flowai/silent-check-sso.html`,
+      redirectUri: `${window.location.origin}/`,
+      silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
     };
 
     keycloak
