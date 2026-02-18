@@ -25,7 +25,7 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToDB = () => {
-    const { token, apiKey, blobStorageConfig, kbChatConfig } = useAppContext();
+    const { token, apiKey, blobStorageConfig, kbChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -143,13 +143,13 @@ export const ExcelToDB = () => {
             input_value: "hello world!",
             output_type: "text",
             input_type: "text",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
-                "CerebroConverseRegistrarComponent-tL6ob": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_REGISTRAR_ID]: {
                     "vendor_db_name": formData.vendor_db_name,
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                "AzureBlobDownloadComponent-HVqgf": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID]: {
                     "blob_url": resolvedBlobUrl,
                     "connection_string": connectionString
                 }

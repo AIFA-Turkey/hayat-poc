@@ -35,6 +35,8 @@ export const AppProvider = ({ children }) => {
     api_key: import.meta.env.VITE_DOC_INTEL_API_KEY || '',
     endpoint: import.meta.env.VITE_DOC_INTEL_ENDPOINT || ''
   });
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const resetSessionId = () => setSessionId(crypto.randomUUID());
 
   const confirmApiKey = () => {
     sessionStorage.setItem(apiKeyConfirmedFlag, 'true');
@@ -168,7 +170,9 @@ export const AppProvider = ({ children }) => {
         blobStorageConfig,
         setBlobStorageConfig,
         docIntelConfig,
-        setDocIntelConfig
+        setDocIntelConfig,
+        sessionId,
+        resetSessionId
       }}
     >
       {children}

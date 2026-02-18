@@ -25,7 +25,7 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToKB = () => {
-    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig } = useAppContext();
+    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -147,28 +147,28 @@ export const ExcelToKB = () => {
             input_value: "hello world!",
             output_type: "text",
             input_type: "text",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
-                "PatentDataPrepComponent-LIu3z": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DATA_PREP_ID]: {
                     "title_column": formData.title_column,
                     "url_column": formData.url_column
                 },
-                "AzureDocIntel-pdrEa": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_DOC_INTEL_ID]: {
                     "api_key": docIntelApiKey,
                     "endpoint": docIntelEndpoint
                 },
-                "AzureBlobUploadComponent-QHW8r": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_UPLOAD_ID]: {
                     "blob_name": formData.blob_name,
                     "connection_string": connectionString
                 },
-                "CerebroKBBuilderComponent-fV4VM": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_KB_BUILDER_ID]: {
                     "knowledgebase_name": formData.kb_name,
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                "CerebroComponentFetcherComponent-i1UfK": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_FETCHER_ID]: {
                     "workspace_id": kbChatConfig.workspaceid
                 },
-                "AzureBlobDownloadComponent-x5HdI": {
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID]: {
                     "blob_url": resolvedBlobUrl,
                     "connection_string": connectionString
                 }

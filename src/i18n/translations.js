@@ -253,7 +253,7 @@ export const translations = {
     },
     apiKey: {
       welcomeTitle: 'Welcome to Patent GPT!',
-      welcomeSubtitle: 'Enter your FlowAI API Key to continue.',
+      welcomeSubtitle: 'Please login to continue',
       label: 'FlowAI API Key',
       placeholder: 'sk-...',
       requiredError: 'API key is required',

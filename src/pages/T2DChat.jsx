@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MessageSquare, Database, Sparkles, Terminal, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatBubble, ChatInput } from '../components/Chat';
 import { runFlow, FLOW_IDS } from '../services/api';
 import { useAppContext } from '../contexts/AppContext';
@@ -74,8 +76,10 @@ const T2DMessage = ({ text, isBot }) => {
                 )}
 
                 {parsed.result && (
-                    <div className="text-slate-800 whitespace-pre-wrap">
-                        {parsed.result}
+                    <div className="text-slate-800 prose prose-sm max-w-none prose-slate prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:text-slate-100">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {parsed.result}
+                        </ReactMarkdown>
                     </div>
                 )}
             </div>
@@ -84,7 +88,7 @@ const T2DMessage = ({ text, isBot }) => {
 };
 
 export const T2DChat = () => {
-    const { token, apiKey, t2dChatConfig } = useAppContext();
+    const { token, apiKey, t2dChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [messages, setMessages] = useState(() => ([
         { text: t('home.chatTypes.t2d.greeting'), isBot: true }
@@ -127,9 +131,9 @@ export const T2DChat = () => {
             input_value: userMessage,
             output_type: "chat",
             input_type: "chat",
-            sessionid: "user_1",
+            sessionid: sessionId,
             tweaks: {
-                "CerebroT2DChatComponent-10UsX": {
+                [import.meta.env.VITE_TWEAK_T2D_CHAT_ID]: {
                     "db_vendor_account_id": t2dChatConfig.db_vendor_account_id,
                     "lmapiid": t2dChatConfig.lmapiid
                 }
