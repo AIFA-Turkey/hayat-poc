@@ -43,7 +43,7 @@ const resolveStartUrl = (flowId) => {
     ? (START_URL_TEMPLATE.includes('{flowId}')
       ? START_URL_TEMPLATE.replace('{flowId}', flowId)
       : `${START_URL_TEMPLATE.replace(/\/$/, '')}/${flowId}`)
-    : `/api/v1/run/${flowId}`;
+    : `/api/flowai/api/v1/run/${flowId}`;
 
   if (START_QUERY) {
     const joiner = url.includes('?') ? '&' : '?';
@@ -88,9 +88,9 @@ const resolveStatusUrl = (handle) => {
     }
   }
 
-  if (handle.taskId) return `/api/v1/task/${handle.taskId}`;
-  if (handle.runId) return `/api/v1/run/${handle.runId}`;
-  if (handle.jobId) return `/api/v1/build/${handle.jobId}/events`;
+  if (handle.taskId) return `/api/flowai/api/v1/task/${handle.taskId}`;
+  if (handle.runId) return `/api/flowai/api/v1/run/${handle.runId}`;
+  if (handle.jobId) return `/api/flowai/api/v1/build/${handle.jobId}/events`;
   return null;
 };
 
@@ -161,7 +161,7 @@ export const getFlowRunStatus = async (handle, token, apiKey, timeoutMs = 15000)
 };
 
 export const runFlow = async (flowId, payload, token, apiKey) => {
-  const url = `/api/v1/run/${flowId}`;
+  const url = `/api/flowai/api/v1/run/${flowId}`;
 
   const headers = buildHeaders(token, apiKey);
 
