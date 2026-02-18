@@ -52,4 +52,4 @@ jobs:
           app-name: 'patentgpt'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7298B1F4CA834096AC10FD3F871EB13B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6E2C887FD946481F8116DF78797B1B8A }}
