@@ -495,6 +495,9 @@ export const Home = () => {
                 [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID]: {
                     blob_url: uploadedBlobUrl,
                     connection_string: connectionString
+                },
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BATCH]: {
+                    "workspace_id": kbChatConfig.workspaceid
                 }
             }
         };
