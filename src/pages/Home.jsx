@@ -527,6 +527,9 @@ export const Home = () => {
             [import.meta.env.VITE_TWEAK_EXCEL_2_DB_BLOB_DOWNLOAD_ID]: {
                 blob_url: uploadedBlobUrl,
                 connection_string: connectionString
+            },
+            [import.meta.env.VITE_TWEAK_EXCEL_2_DB_POSTGRES]: {
+                table_name: dbForm.vendor_db_name
             }
         }
     }), [dbForm.vendor_db_name, workspaceId, uploadedBlobUrl, connectionString]);
