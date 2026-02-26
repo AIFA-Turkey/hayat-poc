@@ -113,7 +113,7 @@ export const interpretFlowStatus = (data = {}) => {
   return { status, result, error, isSuccess, isError, isRunning };
 };
 
-export const startFlowRun = async (flowId, payload, token, apiKey, timeoutMs = 30000) => {
+export const startFlowRun = async (flowId, payload, token, apiKey, timeoutMs = 1800000) => {
   const url = resolveStartUrl(flowId);
   const headers = buildHeaders(token, apiKey);
 
