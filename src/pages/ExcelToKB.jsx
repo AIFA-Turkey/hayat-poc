@@ -171,6 +171,10 @@ export const ExcelToKB = () => {
                 [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BLOB_DOWNLOAD_ID]: {
                     "blob_url": resolvedBlobUrl,
                     "connection_string": connectionString
+                },
+                [import.meta.env.VITE_TWEAK_EXCEL_2_KB_BATCH]: {
+                    "workspace_id": kbChatConfig.workspaceid
+
                 }
             }
         };
