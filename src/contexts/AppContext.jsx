@@ -21,6 +21,7 @@ export const AppProvider = ({ children }) => {
     workspaceid: import.meta.env.VITE_KB_WORKSPACEID || ''
   });
   const [t2dChatConfig, setT2dChatConfig] = useState({
+    workspaceid: import.meta.env.VITE_T2D_WORKSPACEID || import.meta.env.VITE_KB_WORKSPACEID || '',
     db_vendor_account_id: import.meta.env.VITE_T2D_VENDOR_ACCOUNT_ID || '',
     lmapiid: import.meta.env.VITE_T2D_LMAPIID || ''
   });
@@ -60,6 +61,8 @@ export const AppProvider = ({ children }) => {
     setApiKeyConfirmed(Boolean(nextKey));
   };
 
+  const [userId, setUserId] = useState(null);
+
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -83,6 +86,7 @@ export const AppProvider = ({ children }) => {
         if (authenticated) {
           console.log('Token acquired:', !!keycloak.token);
           setToken(keycloak.token);
+          setUserId(keycloak.subject || keycloak.tokenParsed?.sub);
           setIsAuthenticated(true);
 
           // Setup token refresh
@@ -92,6 +96,7 @@ export const AppProvider = ({ children }) => {
               .then((refreshed) => {
                 if (refreshed) {
                   setToken(keycloak.token);
+                  setUserId(keycloak.subject || keycloak.tokenParsed?.sub);
                 }
               })
               .catch((err) => {
@@ -101,6 +106,7 @@ export const AppProvider = ({ children }) => {
           }, 60000);
         } else {
           setToken(null);
+          setUserId(null);
           setIsAuthenticated(false);
         }
         setLoading(false);
@@ -153,6 +159,7 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider
       value={{
         token,
+        userId,
         apiKey,
         apiKeyConfirmed,
         isAuthenticated,

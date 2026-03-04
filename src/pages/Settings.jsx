@@ -1,12 +1,23 @@
+import { useState, useEffect } from 'react';
 import { Settings, MessageSquare, Database, Bot, Cloud, FileSearch, Key } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Input, TextArea } from '../components/Input';
+import { Select } from '../components/Select';
 import { useAppContext } from '../contexts/AppContext';
 import { useI18n } from '../contexts/I18nContext';
+import {
+    getWorkspaces,
+    getKnowledgeBases,
+    getKnowledgeBaseLlmApis,
+    getDbVendorAccounts,
+    getWorkspaceComponents
+} from '../services/cerebro';
 
 export const SettingsPage = () => {
     const { t } = useI18n();
     const {
+        token,
+        userId,
         apiKey,
         updateApiKey,
         kbChatConfig,
@@ -21,10 +32,134 @@ export const SettingsPage = () => {
         setDocIntelConfig
     } = useAppContext();
 
+    // Data Sources
+    const [workspaces, setWorkspaces] = useState([]);
+    const [knowledgeBases, setKnowledgeBases] = useState([]);
+    const [kbLlmApis, setKbLlmApis] = useState([]);
+    const [t2dVendorAccounts, setT2dVendorAccounts] = useState([]);
+    const [t2dLlmApis, setT2dLlmApis] = useState([]);
+
+    // Loading States
+    const [loadingSettings, setLoadingSettings] = useState({
+        workspaces: false,
+        kbs: false,
+        kbLlms: false,
+        t2dVendors: false,
+        t2dLlms: false
+    });
+
     const handleChange = (setter) => (event) => {
         const { name, value } = event.target;
         setter((prev) => ({ ...prev, [name]: value }));
     };
+
+    // 1. Fetch Workspaces on Mount
+    useEffect(() => {
+        if (!userId || !token) return;
+        setLoadingSettings(prev => ({ ...prev, workspaces: true }));
+        getWorkspaces(userId, token)
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setWorkspaces(data.map(ws => ({ label: ws.name, value: ws.id })));
+                }
+            })
+            .catch(err => console.error("Error fetching workspaces:", err))
+            .finally(() => setLoadingSettings(prev => ({ ...prev, workspaces: false })));
+    }, [userId, token]);
+
+    // 2. Patent Chat (KB) - Fetch Knowledge Bases when Workspace changes
+    useEffect(() => {
+        if (!kbChatConfig.workspaceid || !token) {
+            return;
+        }
+        setLoadingSettings(prev => ({ ...prev, kbs: true }));
+        getKnowledgeBases(kbChatConfig.workspaceid, token)
+            .then(data => {
+                if (data?.items) {
+                    setKnowledgeBases(data.items.map(kb => ({ label: kb.name, value: kb.id })));
+                } else {
+                    setKnowledgeBases([]);
+                }
+            })
+            .catch(err => console.error("Error fetching KBs:", err))
+            .finally(() => setLoadingSettings(prev => ({ ...prev, kbs: false })));
+    }, [kbChatConfig.workspaceid, token]);
+
+    // Cleanup KB on workspace change implicitly
+    useEffect(() => {
+        if (!kbChatConfig.workspaceid) {
+            setKnowledgeBases([]);
+        }
+    }, [kbChatConfig.workspaceid]);
+
+    // 3. Patent Chat (KB) - Fetch LLM APIs when Knowledge Base changes
+    useEffect(() => {
+        if (!kbChatConfig.knowledgebase_id || !token) {
+            return;
+        }
+        setLoadingSettings(prev => ({ ...prev, kbLlms: true }));
+        getKnowledgeBaseLlmApis(kbChatConfig.knowledgebase_id, token)
+            .then(data => {
+                if (data?.lmmodeldetails) {
+                    setKbLlmApis(data.lmmodeldetails.map(llm => ({ label: llm.lmmodelname, value: llm.lmapiid })));
+                } else {
+                    setKbLlmApis([]);
+                }
+            })
+            .catch(err => console.error("Error fetching KB LLMs:", err))
+            .finally(() => setLoadingSettings(prev => ({ ...prev, kbLlms: false })));
+    }, [kbChatConfig.knowledgebase_id, token]);
+
+    // Cleanup KB LLMs
+    useEffect(() => {
+        if (!kbChatConfig.knowledgebase_id) {
+            setKbLlmApis([]);
+        }
+    }, [kbChatConfig.knowledgebase_id]);
+
+    // 4. T2D Chat - Fetch Vendor Accounts & Workspace Components when Workspace changes
+    useEffect(() => {
+        if (!t2dChatConfig.workspaceid || !token) {
+            return;
+        }
+
+        setLoadingSettings(prev => ({ ...prev, t2dVendors: true, t2dLlms: true }));
+
+        Promise.all([
+            getDbVendorAccounts(t2dChatConfig.workspaceid, token).catch(err => {
+                console.error("Error fetching T2D Vendor Accounts:", err);
+                return { items: [] };
+            }),
+            getWorkspaceComponents(t2dChatConfig.workspaceid, token).catch(err => {
+                console.error("Error fetching T2D Components:", err);
+                return { chatcompletionmodels: [] };
+            })
+        ]).then(([vendorData, componentData]) => {
+            if (vendorData?.items) {
+                setT2dVendorAccounts(vendorData.items.map(va => ({ label: va.name, value: va.id })));
+            } else {
+                setT2dVendorAccounts([]);
+            }
+
+            if (componentData?.chatcompletionmodels) {
+                setT2dLlmApis(componentData.chatcompletionmodels.map(llm => ({ label: llm.modelname, value: llm.lmmarkertplaceapiid })));
+            } else {
+                setT2dLlmApis([]);
+            }
+        }).finally(() => {
+            setLoadingSettings(prev => ({ ...prev, t2dVendors: false, t2dLlms: false }));
+        });
+
+    }, [t2dChatConfig.workspaceid, token]);
+
+    // Cleanup T2D
+    useEffect(() => {
+        if (!t2dChatConfig.workspaceid) {
+            setT2dVendorAccounts([]);
+            setT2dLlmApis([]);
+        }
+    }, [t2dChatConfig.workspaceid]);
+
 
     return (
         <div className="space-y-6">
@@ -69,23 +204,32 @@ export const SettingsPage = () => {
                     className="h-full"
                 >
                     <div className="space-y-4">
-                        <Input
-                            label={t('settings.labels.knowledgeBaseId')}
-                            name="knowledgebase_id"
-                            value={kbChatConfig.knowledgebase_id}
-                            onChange={handleChange(setKbChatConfig)}
-                        />
-                        <Input
-                            label={t('settings.labels.lmApiId')}
-                            name="lmapiid"
-                            value={kbChatConfig.lmapiid}
-                            onChange={handleChange(setKbChatConfig)}
-                        />
-                        <Input
+                        <Select
                             label={t('settings.labels.workspaceId')}
                             name="workspaceid"
                             value={kbChatConfig.workspaceid}
                             onChange={handleChange(setKbChatConfig)}
+                            options={workspaces}
+                            placeholder={loadingSettings.workspaces ? "Yükleniyor..." : "Workspace Seçiniz"}
+                            disabled={loadingSettings.workspaces}
+                        />
+                        <Select
+                            label={t('settings.labels.knowledgeBaseId')}
+                            name="knowledgebase_id"
+                            value={kbChatConfig.knowledgebase_id}
+                            onChange={handleChange(setKbChatConfig)}
+                            options={knowledgeBases}
+                            placeholder={loadingSettings.kbs ? "Yükleniyor..." : "Knowledge Base Seçiniz"}
+                            disabled={!kbChatConfig.workspaceid || loadingSettings.kbs}
+                        />
+                        <Select
+                            label={t('settings.labels.lmApiId')}
+                            name="lmapiid"
+                            value={kbChatConfig.lmapiid}
+                            onChange={handleChange(setKbChatConfig)}
+                            options={kbLlmApis}
+                            placeholder={loadingSettings.kbLlms ? "Yükleniyor..." : "LM API Seçiniz"}
+                            disabled={!kbChatConfig.knowledgebase_id || loadingSettings.kbLlms}
                             className="mb-0"
                         />
                     </div>
@@ -104,17 +248,32 @@ export const SettingsPage = () => {
                     className="h-full"
                 >
                     <div className="space-y-4">
-                        <Input
+                        <Select
+                            label={t('settings.labels.workspaceId')}
+                            name="workspaceid"
+                            value={t2dChatConfig.workspaceid || ''}
+                            onChange={handleChange(setT2dChatConfig)}
+                            options={workspaces}
+                            placeholder={loadingSettings.workspaces ? "Yükleniyor..." : "Workspace Seçiniz"}
+                            disabled={loadingSettings.workspaces}
+                        />
+                        <Select
                             label={t('settings.labels.vendorAccountId')}
                             name="db_vendor_account_id"
-                            value={t2dChatConfig.db_vendor_account_id}
+                            value={t2dChatConfig.db_vendor_account_id || ''}
                             onChange={handleChange(setT2dChatConfig)}
+                            options={t2dVendorAccounts}
+                            placeholder={loadingSettings.t2dVendors ? "Yükleniyor..." : "Vendor Account Seçiniz"}
+                            disabled={!t2dChatConfig.workspaceid || loadingSettings.t2dVendors}
                         />
-                        <Input
+                        <Select
                             label={t('settings.labels.lmApiId')}
                             name="lmapiid"
-                            value={t2dChatConfig.lmapiid}
+                            value={t2dChatConfig.lmapiid || ''}
                             onChange={handleChange(setT2dChatConfig)}
+                            options={t2dLlmApis}
+                            placeholder={loadingSettings.t2dLlms ? "Yükleniyor..." : "LM API Seçiniz"}
+                            disabled={!t2dChatConfig.workspaceid || loadingSettings.t2dLlms}
                             className="mb-0"
                         />
                     </div>

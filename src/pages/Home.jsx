@@ -119,8 +119,10 @@ const buildBotMessage = (response) => {
 
 const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
     const { t } = useI18n();
+    const { setKbChatConfig, setT2dChatConfig } = useAppContext();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [parsedOutput, setParsedOutput] = useState(null);
     const [error, setError] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const pollIntervalRef = useRef(null);
@@ -168,7 +170,49 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
             }
 
             if (statusInfo.isSuccess) {
-                setResult(statusInfo.result ?? data);
+                const finalResult = statusInfo.result ?? data;
+                setResult(finalResult);
+
+                try {
+                    const findOutputText = (obj) => {
+                        if (!obj) return null;
+                        if (typeof obj === 'string') {
+                            try {
+                                const parsed = JSON.parse(obj);
+                                if (parsed.kb_id || parsed.link || parsed.vendor_account_id || parsed.vendor_account_name) return obj;
+                            } catch (e) {
+                                // Ignore non-json strings
+                            }
+                        }
+                        if (Array.isArray(obj)) {
+                            for (const item of obj) {
+                                const found = findOutputText(item);
+                                if (found) return found;
+                            }
+                        } else if (typeof obj === 'object') {
+                            for (const key in obj) {
+                                const found = findOutputText(obj[key]);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+
+                    const outputText = findOutputText(finalResult);
+                    if (outputText) {
+                        const parsed = JSON.parse(outputText);
+                        setParsedOutput(parsed);
+                        if (parsed.kb_id) {
+                            setKbChatConfig(prev => ({ ...prev, knowledgebase_id: parsed.kb_id }));
+                        }
+                        if (parsed.vendor_account_id) {
+                            setT2dChatConfig(prev => ({ ...prev, db_vendor_account_id: parsed.vendor_account_id }));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to parse output text", e);
+                }
+
                 setLoading(false);
                 setStatusMessage('');
                 return;
@@ -207,7 +251,47 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
                     }
 
                     if (nextStatus.isSuccess) {
-                        setResult(nextStatus.result ?? statusData);
+                        const finalResult = nextStatus.result ?? statusData;
+                        setResult(finalResult);
+
+                        try {
+                            const findOutputText = (obj) => {
+                                if (!obj) return null;
+                                if (typeof obj === 'string') {
+                                    try {
+                                        const parsed = JSON.parse(obj);
+                                        if (parsed.kb_id || parsed.link || parsed.vendor_account_id || parsed.vendor_account_name) return obj;
+                                    } catch (e) { }
+                                }
+                                if (Array.isArray(obj)) {
+                                    for (const item of obj) {
+                                        const found = findOutputText(item);
+                                        if (found) return found;
+                                    }
+                                } else if (typeof obj === 'object') {
+                                    for (const key in obj) {
+                                        const found = findOutputText(obj[key]);
+                                        if (found) return found;
+                                    }
+                                }
+                                return null;
+                            };
+
+                            const outputText = findOutputText(finalResult);
+                            if (outputText) {
+                                const parsed = JSON.parse(outputText);
+                                setParsedOutput(parsed);
+                                if (parsed.kb_id) {
+                                    setKbChatConfig(prev => ({ ...prev, knowledgebase_id: parsed.kb_id }));
+                                }
+                                if (parsed.vendor_account_id) {
+                                    setT2dChatConfig(prev => ({ ...prev, db_vendor_account_id: parsed.vendor_account_id }));
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse output text", e);
+                        }
+
                         setLoading(false);
                         setStatusMessage('');
                         stopPolling();
@@ -234,9 +318,9 @@ const useFlowRunner = ({ flowId, token, apiKey, buildPayload, validate }) => {
             setLoading(false);
             setStatusMessage('');
         }
-    }, [buildPayload, flowId, apiKey, token, stopPolling, validate, t]);
+    }, [buildPayload, flowId, apiKey, token, stopPolling, validate, t, setKbChatConfig, setT2dChatConfig]);
 
-    return { loading, result, error, statusMessage, run };
+    return { loading, result, parsedOutput, error, statusMessage, run };
 };
 
 const ACCENT_TEXT = {
@@ -245,7 +329,7 @@ const ACCENT_TEXT = {
     indigo: 'text-indigo-600'
 };
 
-const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', idleLabel }) => {
+const FlowOutput = ({ loading, error, result, parsedOutput, statusMessage, accent = 'indigo', idleLabel }) => {
     const { t } = useI18n();
     const accentClass = ACCENT_TEXT[accent] || ACCENT_TEXT.indigo;
     const resolvedIdleLabel = idleLabel || t('common.outputPlaceholder');
@@ -283,12 +367,44 @@ const FlowOutput = ({ loading, error, result, statusMessage, accent = 'indigo', 
                         <div className="font-semibold">{t('common.flowSuccess')}</div>
                     </div>
 
-                    <h4 className="font-medium text-slate-700 text-sm">{t('common.rawResponse')}</h4>
-                    <div className="relative">
-                        <pre className="p-4 rounded-lg bg-slate-50 border border-slate-200 overflow-x-auto text-xs text-slate-600 font-mono">
-                            {JSON.stringify(result, null, 2)}
-                        </pre>
-                    </div>
+                    {parsedOutput && (
+                        <div className="space-y-3">
+                            {parsedOutput.link && (
+                                <div>
+                                    <h4 className="font-medium text-slate-700 text-sm">Download Link</h4>
+                                    <a href={parsedOutput.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-800 break-all underline">
+                                        {parsedOutput.link}
+                                    </a>
+                                </div>
+                            )}
+                            {parsedOutput.kb_id && (
+                                <div>
+                                    <h4 className="font-medium text-slate-700 text-sm">Generated Knowledgebase Id</h4>
+                                    <p className="text-xs text-slate-600 font-mono bg-slate-100 p-2 rounded border border-slate-200 break-all">
+                                        {parsedOutput.kb_id}
+                                    </p>
+                                    <p className="text-xs text-emerald-600 mt-1">✓ Automatically updated in Settings</p>
+                                </div>
+                            )}
+                            {parsedOutput.vendor_account_name && (
+                                <div>
+                                    <h4 className="font-medium text-slate-700 text-sm">Created Vendor Account</h4>
+                                    <p className="text-xs text-indigo-600 font-mono break-all">
+                                        {parsedOutput.vendor_account_name}
+                                    </p>
+                                </div>
+                            )}
+                            {parsedOutput.vendor_account_id && (
+                                <div>
+                                    <h4 className="font-medium text-slate-700 text-sm">Created Vendor Account Id</h4>
+                                    <p className="text-xs text-slate-600 font-mono bg-slate-100 p-2 rounded border border-slate-200 break-all">
+                                        {parsedOutput.vendor_account_id}
+                                    </p>
+                                    <p className="text-xs text-cyan-600 mt-1">✓ Automatically updated in Settings</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </motion.div>
             )}
         </>
@@ -783,6 +899,7 @@ export const Home = () => {
                                                     loading={kbFlow.loading}
                                                     error={kbFlow.error}
                                                     result={kbFlow.result}
+                                                    parsedOutput={kbFlow.parsedOutput}
                                                     statusMessage={kbFlow.statusMessage}
                                                     accent="emerald"
                                                 />
@@ -825,6 +942,7 @@ export const Home = () => {
                                                     loading={dbFlow.loading}
                                                     error={dbFlow.error}
                                                     result={dbFlow.result}
+                                                    parsedOutput={dbFlow.parsedOutput}
                                                     statusMessage={dbFlow.statusMessage}
                                                     accent="cyan"
                                                 />

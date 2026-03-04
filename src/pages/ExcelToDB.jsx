@@ -25,10 +25,11 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToDB = () => {
-    const { token, apiKey, blobStorageConfig, kbChatConfig, sessionId } = useAppContext();
+    const { token, apiKey, blobStorageConfig, kbChatConfig, t2dChatConfig, setT2dChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [parsedOutput, setParsedOutput] = useState(null);
     const [error, setError] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -137,6 +138,7 @@ export const ExcelToDB = () => {
         setLoading(true);
         setError('');
         setResult(null);
+        setParsedOutput(null);
         setStatusMessage(t('common.starting'));
 
         const payload = {
@@ -173,7 +175,46 @@ export const ExcelToDB = () => {
             }
 
             if (statusInfo.isSuccess) {
-                setResult(statusInfo.result ?? data);
+                const finalResult = statusInfo.result ?? data;
+                setResult(finalResult);
+
+                try {
+                    const findOutputText = (obj) => {
+                        if (!obj) return null;
+                        if (typeof obj === 'string') {
+                            try {
+                                const parsed = JSON.parse(obj);
+                                if (parsed.vendor_account_id || parsed.vendor_account_name) return obj;
+                            } catch (e) {
+                                // Ignore non-json strings
+                            }
+                        }
+                        if (Array.isArray(obj)) {
+                            for (const item of obj) {
+                                const found = findOutputText(item);
+                                if (found) return found;
+                            }
+                        } else if (typeof obj === 'object') {
+                            for (const key in obj) {
+                                const found = findOutputText(obj[key]);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+
+                    const outputText = findOutputText(finalResult);
+                    if (outputText) {
+                        const parsed = JSON.parse(outputText);
+                        setParsedOutput(parsed);
+                        if (parsed.vendor_account_id) {
+                            setT2dChatConfig(prev => ({ ...prev, db_vendor_account_id: parsed.vendor_account_id }));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to parse output text", e);
+                }
+
                 setLoading(false);
                 setStatusMessage('');
                 return;
@@ -212,7 +253,44 @@ export const ExcelToDB = () => {
                     }
 
                     if (nextStatus.isSuccess) {
-                        setResult(nextStatus.result ?? statusData);
+                        const finalResult = nextStatus.result ?? statusData;
+                        setResult(finalResult);
+
+                        try {
+                            const findOutputText = (obj) => {
+                                if (!obj) return null;
+                                if (typeof obj === 'string') {
+                                    try {
+                                        const parsed = JSON.parse(obj);
+                                        if (parsed.vendor_account_id || parsed.vendor_account_name) return obj;
+                                    } catch (e) { }
+                                }
+                                if (Array.isArray(obj)) {
+                                    for (const item of obj) {
+                                        const found = findOutputText(item);
+                                        if (found) return found;
+                                    }
+                                } else if (typeof obj === 'object') {
+                                    for (const key in obj) {
+                                        const found = findOutputText(obj[key]);
+                                        if (found) return found;
+                                    }
+                                }
+                                return null;
+                            };
+
+                            const outputText = findOutputText(finalResult);
+                            if (outputText) {
+                                const parsed = JSON.parse(outputText);
+                                setParsedOutput(parsed);
+                                if (parsed.vendor_account_id) {
+                                    setT2dChatConfig(prev => ({ ...prev, db_vendor_account_id: parsed.vendor_account_id }));
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse output text", e);
+                        }
+
                         setLoading(false);
                         setStatusMessage('');
                         stopPolling();
@@ -339,12 +417,27 @@ export const ExcelToDB = () => {
                                     <div className="font-semibold">{t('common.flowSuccess')}</div>
                                 </div>
 
-                                <h4 className="font-medium text-slate-700 text-sm">{t('common.rawResponse')}</h4>
-                                <div className="relative">
-                                    <pre className="p-4 rounded-lg bg-slate-50 border border-slate-200 overflow-x-auto text-xs text-slate-600 font-mono">
-                                        {JSON.stringify(result, null, 2)}
-                                    </pre>
-                                </div>
+                                {parsedOutput && (
+                                    <div className="space-y-3">
+                                        {parsedOutput.vendor_account_name && (
+                                            <div>
+                                                <h4 className="font-medium text-slate-700 text-sm">Created Vendor Account</h4>
+                                                <p className="text-xs text-indigo-600 font-mono break-all">
+                                                    {parsedOutput.vendor_account_name}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {parsedOutput.vendor_account_id && (
+                                            <div>
+                                                <h4 className="font-medium text-slate-700 text-sm">Created Vendor Account Id</h4>
+                                                <p className="text-xs text-slate-600 font-mono bg-slate-100 p-2 rounded border border-slate-200 break-all">
+                                                    {parsedOutput.vendor_account_id}
+                                                </p>
+                                                <p className="text-xs text-cyan-600 mt-1">✓ Automatically updated in Settings</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </Card>

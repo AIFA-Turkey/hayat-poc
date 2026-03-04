@@ -25,10 +25,11 @@ const isExcelFile = (file) => {
 };
 
 export const ExcelToKB = () => {
-    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig, sessionId } = useAppContext();
+    const { token, apiKey, blobStorageConfig, docIntelConfig, kbChatConfig, setKbChatConfig, sessionId } = useAppContext();
     const { t } = useI18n();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [parsedOutput, setParsedOutput] = useState(null);
     const [error, setError] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -141,6 +142,7 @@ export const ExcelToKB = () => {
         setLoading(true);
         setError('');
         setResult(null);
+        setParsedOutput(null);
         setStatusMessage(t('common.starting'));
 
         const payload = {
@@ -192,7 +194,46 @@ export const ExcelToKB = () => {
             }
 
             if (statusInfo.isSuccess) {
-                setResult(statusInfo.result ?? data);
+                const finalResult = statusInfo.result ?? data;
+                setResult(finalResult);
+
+                try {
+                    const findOutputText = (obj) => {
+                        if (!obj) return null;
+                        if (typeof obj === 'string') {
+                            try {
+                                const parsed = JSON.parse(obj);
+                                if (parsed.kb_id || parsed.link) return obj;
+                            } catch (e) {
+                                // Ignore non-json strings
+                            }
+                        }
+                        if (Array.isArray(obj)) {
+                            for (const item of obj) {
+                                const found = findOutputText(item);
+                                if (found) return found;
+                            }
+                        } else if (typeof obj === 'object') {
+                            for (const key in obj) {
+                                const found = findOutputText(obj[key]);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+
+                    const outputText = findOutputText(finalResult);
+                    if (outputText) {
+                        const parsed = JSON.parse(outputText);
+                        setParsedOutput(parsed);
+                        if (parsed.kb_id) {
+                            setKbChatConfig(prev => ({ ...prev, knowledgebase_id: parsed.kb_id }));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to parse output text", e);
+                }
+
                 setLoading(false);
                 setStatusMessage('');
                 return;
@@ -231,7 +272,44 @@ export const ExcelToKB = () => {
                     }
 
                     if (nextStatus.isSuccess) {
-                        setResult(nextStatus.result ?? statusData);
+                        const finalResult = nextStatus.result ?? statusData;
+                        setResult(finalResult);
+
+                        try {
+                            const findOutputText = (obj) => {
+                                if (!obj) return null;
+                                if (typeof obj === 'string') {
+                                    try {
+                                        const parsed = JSON.parse(obj);
+                                        if (parsed.kb_id || parsed.link) return obj;
+                                    } catch (e) { }
+                                }
+                                if (Array.isArray(obj)) {
+                                    for (const item of obj) {
+                                        const found = findOutputText(item);
+                                        if (found) return found;
+                                    }
+                                } else if (typeof obj === 'object') {
+                                    for (const key in obj) {
+                                        const found = findOutputText(obj[key]);
+                                        if (found) return found;
+                                    }
+                                }
+                                return null;
+                            };
+
+                            const outputText = findOutputText(finalResult);
+                            if (outputText) {
+                                const parsed = JSON.parse(outputText);
+                                setParsedOutput(parsed);
+                                if (parsed.kb_id) {
+                                    setKbChatConfig(prev => ({ ...prev, knowledgebase_id: parsed.kb_id }));
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse output text", e);
+                        }
+
                         setLoading(false);
                         setStatusMessage('');
                         stopPolling();
@@ -366,12 +444,27 @@ export const ExcelToKB = () => {
                                     <div className="font-semibold">{t('common.flowSuccess')}</div>
                                 </div>
 
-                                <h4 className="font-medium text-slate-700 text-sm">{t('common.rawResponse')}</h4>
-                                <div className="relative">
-                                    <pre className="p-4 rounded-lg bg-slate-50 border border-slate-200 overflow-x-auto text-xs text-slate-600 font-mono">
-                                        {JSON.stringify(result, null, 2)}
-                                    </pre>
-                                </div>
+                                {parsedOutput && (
+                                    <div className="space-y-3">
+                                        {parsedOutput.link && (
+                                            <div>
+                                                <h4 className="font-medium text-slate-700 text-sm">Download Link</h4>
+                                                <a href={parsedOutput.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-800 break-all underline">
+                                                    {parsedOutput.link}
+                                                </a>
+                                            </div>
+                                        )}
+                                        {parsedOutput.kb_id && (
+                                            <div>
+                                                <h4 className="font-medium text-slate-700 text-sm">Generated Knowledgebase Id</h4>
+                                                <p className="text-xs text-slate-600 font-mono bg-slate-100 p-2 rounded border border-slate-200 break-all">
+                                                    {parsedOutput.kb_id}
+                                                </p>
+                                                <p className="text-xs text-emerald-600 mt-1">✓ Automatically updated in Settings</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </Card>
