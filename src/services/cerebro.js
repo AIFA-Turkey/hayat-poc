@@ -1,7 +1,6 @@
 import { tStatic } from '../i18n/translate';
 
-// We use the existing proxy '/cerebro-api' defined in vite.config.js which points to https://www.cerebroaifalabs.com
-const CEREBRO_API_BASE = '/cerebro-api'; 
+const CEREBRO_API_BASE = import.meta.env.VITE_CEREBRO_API_URL || 'https://www.cerebroaifalabs.com/api'; 
 
 const buildHeaders = (token) => {
   const headers = {
