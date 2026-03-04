@@ -17,11 +17,17 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api': {
-          target: 'https://www.cerebroaifalabs.com',
+          target: 'https://www.cerebroaifalabs.com', // Keep for backward compatibility or backend flows
           changeOrigin: true,
           secure: false,
           timeout: 1800000, // 30 minutes
           proxyTimeout: 1800000, // 30 minutes
+        },
+        '/cerebro-api': {
+          target: 'https://www.cerebroaifalabs.com',
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/cerebro-api/, '/api'), // Rewrites /cerebro-api/x to /api/x on target
         },
         '/blob-proxy': {
           target: 'https://cererpblobdev.blob.core.windows.net',
